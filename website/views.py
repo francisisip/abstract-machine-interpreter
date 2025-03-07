@@ -12,6 +12,9 @@ def home():
         session['input_string'] = ""
     if 'is_started' not in session:
         session['is_started'] = False
+    index = 0
+    state = ""
+    mem_contents = {}
 
     if request.method == 'POST':
 
@@ -37,7 +40,14 @@ def home():
             session.pop('is_started', None)
             session['is_started'] = False
 
-    return render_template("index.html", type="Step by State", is_started=session['is_started'], md=session['md'], input_string=session['input_string'])
+    return render_template("index.html", 
+                           type="Step by State", 
+                           is_started=session['is_started'], 
+                           md=session['md'], 
+                           input_string=session['input_string'],
+                           index=index,
+                           state=state,
+                           mem_contents=mem_contents)
 
 @views.route('/multiple-run', methods=['GET', 'POST'])
 def multiple_run():
