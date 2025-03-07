@@ -6,49 +6,63 @@ views = Blueprint('views', __name__)
 
 @views.route('/', methods=['GET', 'POST'])
 def home():
+
+    # initialize session variables
     if 'md' not in session:
         session['md'] = ""
     if 'input_string' not in session:
         session['input_string'] = ""
-    if 'is_started' not in session:
-        session['is_started'] = False
+    if 'initialized' not in session:
+        session['initialized'] = False
+    if 'memory' not in session:
+        session['memory'] = {}
+    if 'logic' not in session:
+        session['logic'] = {}
+
+    # initialize local variables
     index = 0
     state = ""
     mem_contents = {}
     output = ""
+    step_count = 0
 
+    # handle different types of requests
     if request.method == 'POST':
 
+        # start button to initialize machine
         if 'start' in request.form:
-            memory = {}
-            logic = {}
+
+            # store form data in session variables
             session['md'] = request.form.get('machine-definition')
             session['input_string'] = request.form.get('input-string')
 
-            memory, logic, valid, error = extractMachineDefinition(session['md'])
+            # extract machine definition if valid machine syntax
+            session['memory'], session['logic'], valid, error = extractMachineDefinition(session['md'])
 
             if not valid:
                 flash(error, category='error')
             else:
-                index, state, mem_contents, output = initializeAutomata(memory, logic, session['input_string'])
-                session['is_started'] = True
+                index, state, mem_contents, output, step_count = initializeAutomata(session['memory'], session['logic'], session['input_string'])
+                session['initialized'] = True
                 print(index)
                 print(state)
                 print(mem_contents)
     
+        # reset button to reset machine
         if 'reset' in request.form:
-            session.pop('is_started', None)
-            session['is_started'] = False
+            session.pop('initialized', None)
+            session['initialized'] = False
 
     return render_template("index.html", 
                            type="Step by State", 
-                           is_started=session['is_started'], 
+                           initialized=session['initialized'], 
                            md=session['md'], 
                            input_string=session['input_string'],
                            index=index,
                            state=state,
                            mem_contents=mem_contents,
-                           output=output)
+                           output=output,
+                           step_count=step_count)
 
 @views.route('/multiple-run', methods=['GET', 'POST'])
 def multiple_run():

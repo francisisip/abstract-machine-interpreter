@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
+
 <br>
 <h1 style="text-align: center;">Abstract Machine Interpreter</h1>
 <p style="text-align: justify; font-size: 0.90rem;">
@@ -11,7 +12,8 @@
   multiple inputs and view the final output of the machines. <br>
 </p>
 
-{% if is_started %}
+{% if initialized %}
+
   <div class="alert alert-success" role="alert">
     {% if index == -1 %}
       <b>Input:</b> {empty}
@@ -24,14 +26,16 @@
       </span>
     {% endif %}
   </div>
+
   <div class="alert alert-warning" role="alert">
     <b>Memory Structures:</b> {{ mem_contents }}
   </div>
+  
 {% endif %}
 
 <div class="content-container">
-  <!-- Left side: Form -->
   <div class="left-container">
+    
     <form method="post">
       <div class="form-group editor-container">
         <label for="machine-definition" style="font-weight: bold;">Machine Definition</label>
@@ -73,7 +77,7 @@ D] RIGHT(T1) (Y/Y,D), (#/#,accept), (1/1,reject)
   </div>
 
   <div class="right-container">
-    {% if is_started %}
+    {% if initialized %}
       <br>
       <div class="alert alert-danger" role="alert">
         {% if output == "" %}
@@ -85,13 +89,16 @@ D] RIGHT(T1) (Y/Y,D), (#/#,accept), (1/1,reject)
       <div class="alert alert-info" role="alert">
         <b>Current State:</b> {{ state }}
       </div>
+      <div class="alert alert-primary" role="alert">
+        <b>Step Count:</b> {{ step_count }}
+      </div>
     {% endif %}
   </div>
 </div>
 
 <div class="button-container">
   <form method="post">
-    {% if not is_started %}
+    {% if not initialized %}
       <input type="submit" class="btn btn-danger" id="startBtn" name="start" value="Start">
     {% else %}
       <input type="submit" class="btn btn-warning" id="stepBtn" name="step" value="Step">
@@ -102,12 +109,11 @@ D] RIGHT(T1) (Y/Y,D), (#/#,accept), (1/1,reject)
 </div>
 
 <br>
-
 <p style="text-align: justify; font-size: 0.90rem;">
   Current Procedure: <b>{{ type }}</b>. A text field for the machine definition, which includes the .DATA and .LOGIC sections,
   and a text field for the input string is provided. An example of the machine definition and input string is shown above. 
   More information about which memory storage and operations are supported can be found <a href="">here</a>.
 </p>
-
 <p style="text-align: center; font-size: 0.75rem; font-style: italic;">Developed by: Francis I. Bawa | CSC615M G01</p>
+
 {% endblock %}
