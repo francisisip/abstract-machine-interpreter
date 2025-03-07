@@ -15,6 +15,7 @@ def home():
     index = 0
     state = ""
     mem_contents = {}
+    output = ""
 
     if request.method == 'POST':
 
@@ -29,12 +30,11 @@ def home():
             if not valid:
                 flash(error, category='error')
             else:
-                index, state, mem_contents = initializeAutomata(memory, logic, session['input_string'])
+                index, state, mem_contents, output = initializeAutomata(memory, logic, session['input_string'])
                 session['is_started'] = True
                 print(index)
                 print(state)
                 print(mem_contents)
-                print("Machine definition is valid")
     
         if 'reset' in request.form:
             session.pop('is_started', None)
@@ -47,7 +47,8 @@ def home():
                            input_string=session['input_string'],
                            index=index,
                            state=state,
-                           mem_contents=mem_contents)
+                           mem_contents=mem_contents,
+                           output=output)
 
 @views.route('/multiple-run', methods=['GET', 'POST'])
 def multiple_run():
