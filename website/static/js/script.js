@@ -29,8 +29,16 @@ function updateLineNumbers() {
     const textarea = document.getElementById("machine-definition");
     const lineNumbers = document.getElementById("line-numbers");
 
-    // Count lines
-    const lines = textarea.value.split("\n").length;
+    lines = textarea.value.split("\n").length;
+
+    // If the textarea is truly empty (no characters at all), set it to 10 lines
+    if (textarea.value.length === 0) {
+        lines = 10;
+    } else {
+        // Ensure at least 1 line is always displayed
+        lines = Math.max(lines, 1);
+    }
+
     let lineNumbersHTML = "";
     for (let i = 1; i <= lines; i++) {
         lineNumbersHTML += i + "<br>";
@@ -39,11 +47,18 @@ function updateLineNumbers() {
     lineNumbers.innerHTML = lineNumbersHTML;
 }
 
+// Update line numbers on input change
+document.getElementById("machine-definition").addEventListener("input", updateLineNumbers);
+
+// Ensure scrolling syncs properly
 function syncScroll() {
     const textarea = document.getElementById("machine-definition");
     const lineNumbers = document.getElementById("line-numbers");
     lineNumbers.scrollTop = textarea.scrollTop;
 }
+
+// Attach event listeners
+document.getElementById("machine-definition").addEventListener("scroll", syncScroll);
 
 function preloadLineNumbers(count) {
     let lineNumbersHTML = "";
@@ -55,5 +70,4 @@ function preloadLineNumbers(count) {
 
 // Preload 15 lines for placeholder (adjust as needed)
 preloadLineNumbers(10);
-
 });

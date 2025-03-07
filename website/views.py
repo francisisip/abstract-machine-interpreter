@@ -18,7 +18,7 @@ def home():
 
     if request.method == 'POST':
 
-        if 'run' in request.form:
+        if 'start' in request.form:
             memory = {}
             logic = {}
             session['md'] = request.form.get('machine-definition')
@@ -51,4 +51,4 @@ def home():
 
 @views.route('/multiple-run', methods=['GET', 'POST'])
 def multiple_run():
-    return render_template("multifast.html", type="Multiple Run")
+    return render_template("multiple_inputs.html", type="Multiple Run")

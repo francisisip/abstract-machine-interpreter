@@ -1,5 +1,33 @@
-.editor-container {
+.content-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+  .left-container {
     width: 70%;
+}
+
+  .right-container {
+    width: 28%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+  .right-container .alert {
+    padding: 10px;
+    font-size: 0.9rem;
+}
+
+  .button-container {
+    text-align: center;
+    margin-top: 15px; /* Adds spacing between content and buttons */
+}
+
+.editor-container {
+    width: 100%;
+    
 }
 
 .editor-wrapper {
@@ -8,6 +36,7 @@
     background: #fff;
     font-family: monospace;
     position: relative;
+    max-height: 225px;  /* Prevents wrapper from growing */
 }
 
 .line-numbers {
@@ -36,4 +65,9 @@
     overflow: auto;
     font-family: monospace;
     white-space: pre;
+}
+
+.small-navbar {
+    padding: 4px 0;
+    min-height: 40px;
 }

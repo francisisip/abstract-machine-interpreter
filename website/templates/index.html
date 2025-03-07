@@ -3,29 +3,18 @@
 {% block content %}
 <br>
 <h1 style="text-align: center;">Abstract Machine Interpreter</h1>
-<p style="text-align: center;">Developed by: Francis I. Bawa - CSC615M G01 </p>
-
 <p style="text-align: justify; font-size: 0.90rem;">
   This is a web-based interpreter for a variety of abstract computational models, 
   each involving different methods of memory storage, memory access, and input-output access.
-  The following procedures are supported:
-</p>
-
-<ul style="text-align: justify;">
-  <li style="font-size: 0.90rem;">Step by State: This procedure allows you to step through the execution of a program one state at a time.</li>
-  <li style="font-size: 0.90rem;">Multiple Run: This procedure allows you to run a program multiple times and view the final state of the program.</li>
-</ul>
-
-<p style="text-align: justify; font-size: 0.90rem;">
-  To get started, click on the procedure you would like to use from the navigation bar above.
-  Currently, you are using the <b>{{type}}</b> procedure.
-  A text field for the machine definition, which includes the .DATA and .LOGIC sections, and a text field for the input string is provided. An example of a machine definition is shown below:
+  The following procedures are supported: Step by State, which allows you to step through 
+  the execution of a machine one state at a time and Multiple Run, which allows you to run 
+  multiple inputs and view the final output of the machines. <br>
 </p>
 
 {% if is_started %}
   <div class="alert alert-success" role="alert">
     {% if index == -1 %}
-      <b>Current Input: {empty}</b>
+      <b>Input:</b> {empty}
     {% else %}
       <span>
         <b>Current Input:</b>
@@ -35,28 +24,26 @@
       </span>
     {% endif %}
   </div>
-  <div class="alert alert-danger" role="alert">
-    <b>Current Output:</b> {{ output_string }}
-  </div>
   <div class="alert alert-warning" role="alert">
-    <b>Current Memory:</b> {{ mem_contents }}
-  </div>
-  <div class="alert alert-info" role="alert">
-    <b>Current State:</b> {{ state }}
+    <b>Memory Structures:</b> {{ mem_contents }}
   </div>
 {% endif %}
 
-<form method="post">
-  <div class="form-group editor-container">
-    <label for="machine-definition" style="font-weight: bold;">Machine Definition</label>
-    <div class="editor-wrapper">
-        <div id="line-numbers" class="line-numbers"></div>
-        <textarea 
-            id="machine-definition" 
-            name="machine-definition" 
-            class="form-control text-area"
-            rows="10"
-            placeholder=".DATA
+<div class="content-container">
+  <!-- Left side: Form -->
+  <div class="left-container">
+    <form method="post">
+      <div class="form-group editor-container">
+        <label for="machine-definition" style="font-weight: bold;">Machine Definition</label>
+        <div class="editor-wrapper">
+            <div id="line-numbers" class="line-numbers"></div>
+            <textarea 
+                id="machine-definition" 
+                name="machine-definition" 
+                class="form-control text-area"
+                rows="10"
+                placeholder=
+".DATA
 TAPE T1
 
 .LOGIC
@@ -66,33 +53,61 @@ C] LEFT(T1) (0/0,C), (Y/Y,C), (X/X,A)
 D] RIGHT(T1) (Y/Y,D), (#/#,accept), (1/1,reject)
 
 # Press Tab to use placeholder as input"
-            oninput="updateLineNumbers()" 
-            onscroll="syncScroll()"
-        >{{ md }}</textarea>
+                oninput="updateLineNumbers()" 
+                onscroll="syncScroll()"
+            >{{ md }}</textarea>
+        </div>
     </div>
+
+      <div class="form-group editor-container">
+        <label for="input-string" style="font-weight: bold;">Input String</label>
+        <textarea 
+          id="input-string" 
+          name="input-string" 
+          class="form-control" 
+          rows="1" 
+          style="resize: none;"
+          placeholder="1110110101 # Press Tab to use placeholder as input"
+          >{{ input_string }}</textarea>
+      </div>
+  </div>
+
+  <div class="right-container">
+    {% if is_started %}
+      <br>
+      <div class="alert alert-danger" role="alert">
+        {% if output == "" %}
+          <b>Output:</b> {empty}
+        {% else %}
+          <b>Current Output:</b> {{ output_string }}
+        {% endif %}
+      </div>
+      <div class="alert alert-info" role="alert">
+        <b>Current State:</b> {{ state }}
+      </div>
+    {% endif %}
+  </div>
 </div>
 
-  <div class="form-group" style="width: 70%">
-    <label for="input-string" style="font-weight: bold;">Input String</label>
-    <textarea 
-      id="input-string" 
-      name="input-string" 
-      class="form-control" 
-      rows="1" 
-      style="resize: none;"
-      placeholder="1110110101 # Press Tab to use placeholder as input"
-      >{{ input_string }}</textarea>
-  </div>
-  
-  <div style="text-align: center;">
+<div class="button-container">
+  <form method="post">
     {% if not is_started %}
-      <input type="submit" class="btn btn-danger" id="startBtn" name="run" value="Start">
+      <input type="submit" class="btn btn-danger" id="startBtn" name="start" value="Start">
     {% else %}
       <input type="submit" class="btn btn-warning" id="stepBtn" name="step" value="Step">
     {% endif %}
     <input type="button" class="btn btn-success" name="finish" value="Fast Run" style="margin-left: 10px;">
     <input type="submit" class="btn btn-secondary" name="reset" value="Reset" style="margin-left: 10px;">
-  </div>
+  </form>
+</div>
 
-</form>
+<br>
+
+<p style="text-align: justify; font-size: 0.90rem;">
+  Current Procedure: <b>{{ type }}</b>. A text field for the machine definition, which includes the .DATA and .LOGIC sections,
+  and a text field for the input string is provided. An example of the machine definition and input string is shown above. 
+  More information about which memory storage and operations are supported can be found <a href="">here</a>.
+</p>
+
+<p style="text-align: center; font-size: 0.75rem; font-style: italic;">Developed by: Francis I. Bawa | CSC615M G01</p>
 {% endblock %}

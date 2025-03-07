@@ -18,24 +18,25 @@
     <title>Abstract Machine Interpreter</title>
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark small-navbar">
       <div class="collapse navbar-collapse justify-content-center" id="navbar">
         <div class="navbar-nav">
-            <a class="nav-item nav-link" href="/" style="font-size: 1.20rem;">Step by State</a>
-            <a class="nav-item nav-link" href="/multiple-run" style="font-size: 1.20rem;">Multiple Run</a>
+          <a class="nav-item nav-link" href="/" style="font-size: 0.85rem; padding: 5px 10px;">Step by State</a>
+          <a class="nav-item nav-link" href="/multiple-run" style="font-size: 0.85rem; padding: 5px 10px;">Multiple Run</a>
+        </div>
       </div>
     </nav>
 
-      {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        {% for category, message in messages %}
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-          {{ message }}
-          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        {% endfor %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      {% for category, message in messages %}
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      {% endfor %}
       {% endif %}
     {% endwith %}
 
