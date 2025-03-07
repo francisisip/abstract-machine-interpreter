@@ -59,11 +59,14 @@ D] RIGHT(T1) (Y/Y,D), (#/#,accept), (1/1,reject)
   </div>
   
   <div style="text-align: center;">
-    <input type="submit" class="btn btn-danger" value="Run">
-    <input type="reset" class="btn btn-secondary" value="Reset" style="margin-left: 10px;">
+    {% if not is_started %}
+      <input type="submit" class="btn btn-danger" id="startBtn" name="run" value="Start">
+    {% else %}
+      <input type="submit" class="btn btn-warning" id="stepBtn" name="step" value="Step">
+    {% endif %}
     <input type="button" class="btn btn-success" name="finish" value="Fast Run" style="margin-left: 10px;">
+    <input type="submit" class="btn btn-secondary" name="reset" value="Reset" style="margin-left: 10px;">
   </div>
 
 </form>
-  
 {% endblock %}
