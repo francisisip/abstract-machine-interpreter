@@ -22,6 +22,9 @@ def validateDataSection(ds):
                 if not match:
                     return defined_memories, False, f"Invalid .DATA definition: '{line}'"
                 mem_type, mem_name = match.groups()
+                
+                if mem_name in defined_memories:
+                    return defined_memories, False, f"Duplicate memory name detected: '{mem_name}'"
                 defined_memories[mem_name] = mem_type
 
     return defined_memories, True, "Valid .DATA section"
