@@ -19,7 +19,7 @@
       <b>Input:</b> {empty}
     {% else %}
       <span>
-        <b>Current Input:</b>
+        <b>Input:</b>
         {{ input_string[:index]|safe }}  <!-- Part before the index -->
         <span style="color: red; font-weight: bold;">{{ input_string[index] }}</span>  <!-- Highlighted part -->
         {{ input_string[index+1:]|safe }}  <!-- Part after the index -->
@@ -28,7 +28,7 @@
   </div>
 
   <div class="alert alert-warning" role="alert">
-    <b>Memory Structures:</b> {{ mem_contents }}
+    <b></b> {{ mem_contents | safe }}
   </div>
   
 {% endif %}
@@ -59,6 +59,7 @@ D] RIGHT(T1) (Y/Y,D), (#/#,accept), (1/1,reject)
 # Press Tab to use placeholder as input"
                 oninput="updateLineNumbers()" 
                 onscroll="syncScroll()"
+                {% if initialized %}disabled{% endif %}
             >{{ md }}</textarea>
         </div>
     </div>
@@ -72,6 +73,7 @@ D] RIGHT(T1) (Y/Y,D), (#/#,accept), (1/1,reject)
           rows="1" 
           style="resize: none;"
           placeholder="1110110101 # Press Tab to use placeholder as input"
+          {% if initialized %}disabled{% endif %}
           >{{ input_string }}</textarea>
       </div>
   </div>

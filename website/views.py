@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, flash, session
-from .utils import *
-from .backend import *
+from website.utils import extractMachineDefinition
+from website.backend import initializeAutomata
+import re
 
 views = Blueprint('views', __name__)
 
@@ -47,6 +48,8 @@ def home():
                 print(index)
                 print(state)
                 print(mem_contents)
+                mem_contents = re.sub(r'(\bS\d+:|\bQ\d+:|\bT\d+:)', r'<b>\1</b>', mem_contents)
+                mem_contents = mem_contents.replace("\n", "<br>")
     
         # reset button to reset machine
         if 'reset' in request.form:
