@@ -1,3 +1,5 @@
+from website.memory import MemoryClass
+
 global initial_state
 global index
 global state
@@ -14,10 +16,19 @@ def initializeAutomata(memory, logic, input_string):
     initial_state = states_list[0]
     print(states_list)
     state = initial_state
-    mem_contents = "pass"
+
+    memory_contents = MemoryClass()
+    if memory:
+        for mem in memory:
+            memory_contents.initialize(mem, memory[mem])
+
+    curr_mem = memory_contents.print_structs()
+    if curr_mem == "":
+        curr_mem = "{empty}"
+
     output = ""
     step_count = 0
 
-    return index, state, mem_contents, output, step_count
+    return index, state, curr_mem, output, step_count
     
         
