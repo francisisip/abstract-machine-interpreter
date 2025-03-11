@@ -1,119 +1,126 @@
-import re
-
 def split_sections(md):
-    match = re.search(r"(?s)(\.DATA.*?)?(?=(\.LOGIC))(\.LOGIC.*)", md)
+    data_section = None
+    logic_section = None
 
-    if not match:
-        return None, None
+    parts = md.split('.LOGIC', 1) # split md using .LOGIC as delimiter
 
-    data_section = match.group(1).strip() if match.group(1) else None
-    logic_section = match.group(3).strip()
+    if len(parts) == 2:
+        logic_section = '.LOGIC\n' + parts[1].strip()
+
+        data_index = parts[0].find('.DATA')
+        if data_index != -1:
+            data_section = parts[0][data_index:].strip()
 
     return data_section, logic_section
 
 def validateDataSection(ds):
-    defined_memories = {}
+    memory = {}
     valid_structures = {"STACK", "QUEUE", "TAPE", "2D_TAPE"}
 
-    if ds:
+    if ds is not None:
         lines = ds.split("\n")[1:]
         for line in lines:
             line = line.strip()
             if line:
                 parts = line.split()
+                
                 if len(parts) != 2:
-                    return defined_memories, False, f"Invalid .DATA definition: '{line}'"
+                    return memory, False, f"Invalid .DATA definition: '{line}'"
                 
                 mem_type, mem_name = parts
                 if mem_type not in valid_structures:
-                    return defined_memories, False, f"Invalid memory type: '{mem_type}'"
+                    return memory, False, f"Invalid memory type: '{mem_type}'"
 
-                if mem_name in defined_memories:
-                    return defined_memories, False, f"Duplicate memory name detected: '{mem_name}'"
+                if mem_name in memory:
+                    return memory, False, f"Duplicate memory name detected: '{mem_name}'"
 
-                defined_memories[mem_name] = mem_type
+                memory[mem_name] = mem_type
 
-    return defined_memories, True, "Valid .DATA section"
+    return memory, True, "Valid .DATA section"
 
-def validateLogicSection(ls, defined_memories):
+def validateLogicSection(ls, memory):
     logic = {}
     normal_commands = {"SCAN", "PRINT", "SCAN RIGHT", "SCAN LEFT", "READ", "WRITE"}
     tape_commands = {"RIGHT", "LEFT", "UP", "DOWN"}
+    lines = ls.split("\n")[1:] 
 
-    logic_lines = ls.split("\n")[1:] 
-    normal_pattern = re.compile(
-        r"^(\w+)]\s+(SCAN|PRINT|SCAN RIGHT|SCAN LEFT|READ|WRITE)(?:\((\w+)\))?\s*((?:\([^,]+,\s*[^)]+\),?\s*)+)$"
-    )
-    tape_pattern = re.compile(
-        r"^(\w+)]\s+(RIGHT|LEFT|UP|DOWN)\((\w+)\)\s*((?:\([^/]+/[^,]+,\s*[^)]+\),?\s*)+)$"
-    )
-
-    # first pass, extract all state names
-    for line in logic_lines:
+    # extract all state names and initialize logic dictionary
+    for line in lines:
         line = line.strip()
         if line:
-            state_match = re.match(r"^(\w+)]", line)
-            if state_match:
-                state_name = state_match.group(1)
-                logic[state_name] = {"command": None, "memory": None, "transitions": []}
+            if "]" in line:
+                state = line.split("]")[0].strip()
+                logic[state] = {"command": None, "memory": None, "transitions": []}
 
-    # second pass, validate and extract commands and transitions
-    for line in logic_lines:
+    # validate commands and extract transitions
+    for line in lines:
         line = line.strip()
         if not line:
-            continue
+            continue # skip empty lines
 
-        normal_match = normal_pattern.match(line)
-        tape_match = tape_pattern.match(line)
+        parts = line.split("]")
+        if len(parts) != 2:
+            return logic, False, f"Invalid .LOGIC definition: '{line}'"
 
-        if normal_match:
-            state = normal_match.group(1)
-            command = normal_match.group(2).strip()
-            memory_name = normal_match.group(3)
-            transitions_raw = normal_match.group(4)
+        state = parts[0].strip()
+        command = parts[1].strip().split("(")[0].strip()
+        mem_symbol = None
+        index = parts[1].find("(")
+        index_end = parts[1].find(")")
 
-            if command not in normal_commands:
-                return logic, False, f"Invalid command '{command}' in .LOGIC section"
-
-            if memory_name and memory_name not in defined_memories:
-                return logic, False, f"Memory structure '{memory_name}' used in '{command}' is not defined in .DATA"
-
-            transitions = re.findall(r"\(([^,]+),\s*([^)]+)\)", transitions_raw)
-            logic[state] = {
-                "command": command,
-                "memory": memory_name,
-                "transitions": transitions
-            }
-
-        elif tape_match:
-            state = tape_match.group(1)
-            command = tape_match.group(2).strip()
-            memory_name = tape_match.group(3).strip()
-            transitions_raw = tape_match.group(4)
-
-            if command not in tape_commands:
-                return logic, False, f"Invalid command '{command}' in .LOGIC section"
-
-            if memory_name not in defined_memories:
-                return logic, False, f"Memory structure '{memory_name}' used in '{command}' is not defined in .DATA"
-
-            if defined_memories[memory_name] != "TAPE" and defined_memories[memory_name] != "2D_TAPE":
-                return logic, False, f"Memory '{memory_name}' cannot be used with movement command '{command}'"
+        if command in normal_commands:
+            if command not in ["SCAN", "PRINT", "SCAN RIGHT", "SCAN LEFT"]:
+                mem_symbol = parts[1][index + 1 : index_end].strip() if index != -1 and index_end != -1 else None
+                remainder = parts[1][index_end + 1 :].strip() if index_end != -1 else ""
+            else:
+                remainder = parts[1][index:].strip() if index != -1 else ""
             
-            if defined_memories[memory_name] == "TAPE" and command in {"UP", "DOWN"}:
-                return logic, False, f"Memory '{memory_name}' cannot be used with movement command '{command}'"
+            transitions = []
+            value = ""
 
-            transitions = re.findall(r"\(([^/]+)/([^,]+),\s*([^)]+)\)", transitions_raw)
-            logic[state] = {
-                "command": command,
-                "memory": memory_name,
-                "transitions": [(s1, s2, dest) for s1, s2, dest in transitions]
-            }
+            for char in remainder:
+                if char == "(":
+                    value = ""
+                elif char == ")":
+                    transitions.append(tuple(map(str.strip, value.split(","))))
+                else:
+                    value += char
+
+            logic[state] = {"command": command, "memory": mem_symbol, "transitions": transitions}
+
+        elif command in tape_commands:
+            mem_symbol = parts[1][index + 1 : index_end].strip() if index != -1 and index_end != -1 else None
+            remainder = parts[1][index_end + 1 :].strip() if index_end != -1 else ""
+
+            if mem_symbol not in memory:
+                return logic, False, f"Memory structure '{mem_symbol}' used in '{command}' is not defined in .DATA"
+
+            if memory[mem_symbol] not in ["TAPE", "2D_TAPE"]:
+                return logic, False, f"Memory '{mem_symbol}' cannot be used with movement command '{command}'"
+
+            if memory[mem_symbol] == "TAPE" and command in {"UP", "DOWN"}:
+                return logic, False, f"Memory '{mem_symbol}' cannot be used with movement command '{command}'"
+
+            transitions = []
+            value = ""
+
+            for char in remainder:
+                if char == "(":
+                    value = ""
+                elif char == ")":
+                    items = value.strip().split(",")
+                    if len(items) == 2:  
+                        left, right = map(str.strip, items[0].split("/"))
+                        transitions.append((left, right, items[1].strip()))
+                else:
+                    value += char
+            
+            logic[state] = {"command": command, "memory": mem_symbol, "transitions": transitions}
 
         else:
             return logic, False, f"Invalid .LOGIC definition: '{line}'"
 
-    # final pass to check if all destination states are defined
+    # check if all destination states are defined
     for state, data in logic.items():
         for transition in data["transitions"]:
             dest_state = transition[-1]
@@ -125,20 +132,22 @@ def validateLogicSection(ls, defined_memories):
 def extractMachineDefinition(md):
     memory = {}
     logic = {}
-    md = md.strip()
 
-    if not re.search(r'\.LOGIC', md):
-        return memory, logic, False, "Missing .LOGIC section"
-
+    # split the machine definition into data and logic sections
     data_section, logic_section = split_sections(md)
 
-    if not logic_section or logic_section.strip() == ".LOGIC":
+    # error handling for missing or empty .LOGIC section
+    if logic_section is None:
+        return memory, logic, False, "Missing .LOGIC section"
+    if logic_section.strip() == ".LOGIC":
         return memory, logic, False, "The .LOGIC section cannot be empty"
     
+    # validate data section and store in dictionary
     memory, valid, error = validateDataSection(data_section)
     if not valid:
         return memory, logic, False, error
 
+    # validate logic section and store in dictionary
     logic, valid, error = validateLogicSection(logic_section, memory)
     if not valid:
         return memory, logic, False, error
