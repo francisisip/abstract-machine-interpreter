@@ -62,5 +62,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.getElementById("machine-definition").addEventListener("input", updateLineNumbers);
     document.getElementById("machine-definition").addEventListener("scroll", syncScroll);
-    preloadLineNumbers(10);
+    const mdContent = document.getElementById("machine-definition").getAttribute("data-md");
+    preloadLineNumbers(mdContent ? mdContent.split("\n").length : 10);
 });

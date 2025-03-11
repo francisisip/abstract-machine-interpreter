@@ -2,17 +2,6 @@
 
 {% block content %}
 
-<br>
-<h1 style="text-align: center;">Abstract Machine Interpreter</h1>
-<p style="text-align: justify; font-size: 0.90rem;">
-  This is a web-based interpreter for a variety of abstract computational models, 
-  each involving different methods of memory storage, memory access, and input-output access.
-  The following procedures are supported: Step by State, which allows you to step through 
-  the execution of a machine one state at a time and Multiple Run, which allows you to run 
-  multiple inputs and view the final output of the machines. <br>
-</p>
-
-
 <div class="alert alert-success" role="alert">
   {% if index == -1 %}
     <b>Input:</b> {empty}
@@ -63,6 +52,7 @@ C] LEFT(T1) (0/0,C), (Y/Y,C), (X/X,A)
 D] RIGHT(T1) (Y/Y,D), (#/#,accept), (1/1,reject)
 
 # press tab to use placeholder as input"
+                data-md="{{ md|replace('\n', '&#10;') }}"
                 oninput="updateLineNumbers()" 
                 onscroll="syncScroll()"
                 {% if initialized %}disabled{% endif %}

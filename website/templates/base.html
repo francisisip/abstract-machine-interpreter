@@ -40,7 +40,19 @@
       {% endif %}
     {% endwith %}
 
-    <div class="container">{% block content %} {% endblock %}</div>
+      
+    <div class="container">
+      <br>
+      <h1 style="text-align: center;">Abstract Machine Interpreter</h1>
+      <p style="text-align: justify; font-size: 0.90rem;">
+        This is a web-based interpreter for a variety of abstract computational models, 
+        each involving different methods of memory storage, memory access, and input-output access.
+        The following procedures are supported: Step by State, which allows you to step through 
+        the execution of a machine one state at a time, and Multiple Run, which allows you to run 
+        multiple inputs and view the final outputs of the machines. <br>
+      </p>
+      {% block content %} {% endblock %}
+    </div>
   </body>
 
   <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"></script>
