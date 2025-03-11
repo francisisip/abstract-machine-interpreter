@@ -12,26 +12,32 @@
   multiple inputs and view the final output of the machines. <br>
 </p>
 
-{% if initialized %}
 
-  <div class="alert alert-success" role="alert">
-    {% if index == -1 %}
+<div class="alert alert-success" role="alert">
+  {% if index == -1 %}
+    <b>Input:</b> {empty}
+  {% else %}
+    <span>
+      {% if initialized %}
+      <b>Input:</b>
+      {{ input_string[:index]|safe }}  <!-- Part before the index -->
+      <span style="color: red; font-weight: bold;">{{ input_string[index] }}</span>  <!-- Highlighted part -->
+      {{ input_string[index+1:]|safe }}  <!-- Part after the index -->
+      {% else %}
       <b>Input:</b> {empty}
-    {% else %}
-      <span>
-        <b>Input:</b>
-        {{ input_string[:index]|safe }}  <!-- Part before the index -->
-        <span style="color: red; font-weight: bold;">{{ input_string[index] }}</span>  <!-- Highlighted part -->
-        {{ input_string[index+1:]|safe }}  <!-- Part after the index -->
-      </span>
-    {% endif %}
-  </div>
+      {% endif %}
+    </span>
+  {% endif %}
+</div>
 
-  <div class="alert alert-warning" role="alert">
-    <b></b> {{ mem_contents | safe }}
-  </div>
-  
-{% endif %}
+<div class="alert alert-warning" role="alert">
+  {% if initialized %}
+  <b></b> {{ mem_contents | safe }}
+  {% else %}
+  <b>Memory:</b> {empty}
+  {% endif %}
+</div>
+
 
 <div class="content-container">
   <div class="left-container">
@@ -79,7 +85,6 @@ D] RIGHT(T1) (Y/Y,D), (#/#,accept), (1/1,reject)
   </div>
 
   <div class="right-container">
-    {% if initialized %}
       <br>
       <div class="alert alert-danger" role="alert">
         {% if output == "" %}
@@ -89,12 +94,19 @@ D] RIGHT(T1) (Y/Y,D), (#/#,accept), (1/1,reject)
         {% endif %}
       </div>
       <div class="alert alert-info" role="alert">
-        <b>Current State:</b> {{ state }}
+        {% if initialized %}
+          <b>Current State:</b> {{ state }}
+        {% else %}
+          <b>Current State:</b> {empty}
+        {% endif %}
       </div>
       <div class="alert alert-primary" role="alert">
+        {% if initialized %}
         <b>Step Count:</b> {{ step_count }}
+        {% else %}
+        <b>Step Count:</b> 0
+        {% endif %}
       </div>
-    {% endif %}
   </div>
 </div>
 
