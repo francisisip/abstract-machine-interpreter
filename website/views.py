@@ -1,12 +1,25 @@
-from flask import Blueprint, render_template, request, flash, session
-from website.utils import extractMachineDefinition
-from website.backend import initializeAutomata
-import re
+import uuid
+from flask import Blueprint, render_template, request, flash, session, g, current_app
+from website.utils import*
+from website.automata import*
 
 views = Blueprint('views', __name__)
 
+@views.before_request
+def load_automata():
+    session_id = session.get('session_id')
+    
+    if session_id and session_id in current_app.config['AUTOMATA_STORE']:
+        g.automata = current_app.config['AUTOMATA_STORE'][session_id]
+    else:
+        g.automata = None
+
 @views.route('/', methods=['GET', 'POST'])
 def home():
+
+    if 'session_id' not in session:
+        session['session_id'] = str(uuid.uuid4()) 
+    session_id = session['session_id']
 
     # initialize session variables
     if 'md' not in session:
@@ -15,17 +28,8 @@ def home():
         session['input_string'] = ""
     if 'initialized' not in session:
         session['initialized'] = False
-    if 'memory' not in session:
-        session['memory'] = {}
-    if 'logic' not in session:
-        session['logic'] = {}
-
-    # initialize local variables
-    index = 0
-    state = ""
-    mem_contents = {}
-    output = ""
-    step_count = 0
+    if 'finished' not in session:
+        session['finished'] = False
 
     # handle different types of requests
     if request.method == 'POST':
@@ -38,21 +42,26 @@ def home():
             session['input_string'] = request.form.get('input-string')
 
             # extract machine definition if valid machine syntax
-            session['memory'], session['logic'], valid, error = extractMachineDefinition(session['md'])
+            memory_dict, logic_dict, valid, error = extractMachineDefinition(session['md'])
 
             if not valid:
                 flash(error, category='error')
             else:
-                index, state, mem_contents, output, step_count = initializeAutomata(session['memory'], session['logic'], session['input_string'])
                 session['initialized'] = True
-                print(index)
-                print(state)
-                print(mem_contents)
-                mem_contents = re.sub(r'(\bS\d+:|\bQ\d+:|\bT\d+:)', r'<b>\1</b>', mem_contents)
-                mem_contents = mem_contents.replace("\n", "<br>")
+                session['finished'] = False
+                g.automata = Automata(memory_dict, logic_dict, session['input_string'])
+                current_app.config['AUTOMATA_STORE'][session_id] = g.automata
     
+        # step button to step through machine
+        if 'step' in request.form:
+            g.automata.step()
+            session['finished'] = g.automata.finished
+           
         # reset button to reset machine
         if 'reset' in request.form:
+            if session_id in current_app.config['AUTOMATA_STORE']:
+                del current_app.config['AUTOMATA_STORE'][session_id]
+
             session.pop('initialized', None)
             session['initialized'] = False
 
@@ -61,11 +70,13 @@ def home():
                            initialized=session['initialized'], 
                            md=session['md'], 
                            input_string=session['input_string'],
-                           index=index,
-                           state=state,
-                           mem_contents=mem_contents,
-                           output=output,
-                           step_count=step_count)
+                           index=g.automata.index if g.automata else 0,
+                           current_state=g.automata.current_state if g.automata else "",
+                           memory_structures=highlight_mem(g.automata.memory.print_structs()) if g.automata else "",
+                           output=g.automata.output if g.automata else "",
+                           step_count=g.automata.step_count if g.automata else 0,
+                           finished=session['finished'],
+                           message=g.automata.message if g.automata else "")
 
 @views.route('/multiple-run', methods=['GET', 'POST'])
 def multiple_run():
