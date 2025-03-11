@@ -13,18 +13,24 @@ def split_sections(md):
 
 def validateDataSection(ds):
     defined_memories = {}
+    valid_structures = {"STACK", "QUEUE", "TAPE", "2D_TAPE"}
+
     if ds:
         lines = ds.split("\n")[1:]
         for line in lines:
             line = line.strip()
             if line:
-                match = re.match(r"^(STACK|QUEUE|TAPE|2D_TAPE)\s+(\w+)$", line)
-                if not match:
+                parts = line.split()
+                if len(parts) != 2:
                     return defined_memories, False, f"Invalid .DATA definition: '{line}'"
-                mem_type, mem_name = match.groups()
                 
+                mem_type, mem_name = parts
+                if mem_type not in valid_structures:
+                    return defined_memories, False, f"Invalid memory type: '{mem_type}'"
+
                 if mem_name in defined_memories:
                     return defined_memories, False, f"Duplicate memory name detected: '{mem_name}'"
+
                 defined_memories[mem_name] = mem_type
 
     return defined_memories, True, "Valid .DATA section"
