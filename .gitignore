@@ -2,12 +2,5 @@
 .env
 .env.*
 
-# Ignore Python cache files in the website directory
-/website/__pycache__/
-/website/__pycache__/*
-/website/__pycache__/views.cpython-312.pyc
-
-# Ignore all compiled Python files
-*.py[cod]
-*.pyo
-*.pyd
+# Ignore all __pycache__ directories everywhere
+**/__pycache__/
