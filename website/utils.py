@@ -1,3 +1,6 @@
+import re
+from website.memory import MemoryClass
+
 def split_sections(md):
     data_section = None
     logic_section = None
@@ -130,26 +133,40 @@ def validateLogicSection(ls, memory):
     return logic, True, "Valid .LOGIC section"
 
 def extractMachineDefinition(md):
-    memory = {}
-    logic = {}
+    memory_dict = {}
+    logic_dict = {}
 
     # split the machine definition into data and logic sections
     data_section, logic_section = split_sections(md)
 
     # error handling for missing or empty .LOGIC section
     if logic_section is None:
-        return memory, logic, False, "Missing .LOGIC section"
+        return memory_dict, logic_dict, False, "Missing .LOGIC section"
     if logic_section.strip() == ".LOGIC":
-        return memory, logic, False, "The .LOGIC section cannot be empty"
+        return memory_dict, logic_dict, False, "The .LOGIC section cannot be empty"
     
     # validate data section and store in dictionary
-    memory, valid, error = validateDataSection(data_section)
+    memory_dict, valid, error = validateDataSection(data_section)
     if not valid:
-        return memory, logic, False, error
+        return memory_dict, logic_dict, False, error
 
     # validate logic section and store in dictionary
-    logic, valid, error = validateLogicSection(logic_section, memory)
+    logic_dict, valid, error = validateLogicSection(logic_section, memory_dict)
     if not valid:
-        return memory, logic, False, error
+        return memory_dict, logic_dict, False, error
 
-    return memory, logic, True, "Valid machine definition"
+    return memory_dict, logic_dict, True, "Valid machine definition"
+
+def init_memory(memory_dict):
+    memory = MemoryClass()
+    if memory_dict:
+        for mem in memory_dict:
+            memory.initialize(mem, memory_dict[mem])
+
+    return memory
+
+def highlight_mem(memory_structures):
+    memory_structures = re.sub(r'(\bS\d+:|\bQ\d+:|\bT\d+:)', r'<b>\1</b>', memory_structures)
+    memory_structures = memory_structures.replace("\n", "<br>")
+
+    return memory_structures

@@ -21,9 +21,13 @@
 
 <div class="alert alert-warning" role="alert">
   {% if initialized %}
-  <b></b> {{ mem_contents | safe }}
+    {% if memory_structures %}
+    <b></b> {{ memory_structures | safe }}
+    {% else %}
+    <b>Memory:</b> {empty}
+    {% endif %}
   {% else %}
-  <b>Memory:</b> {empty}
+    <b>Memory:</b> {empty}
   {% endif %}
 </div>
 
@@ -80,12 +84,12 @@ D] RIGHT(T1) (Y/Y,D), (#/#,accept), (1/1,reject)
         {% if output == "" %}
           <b>Output:</b> {empty}
         {% else %}
-          <b>Current Output:</b> {{ output_string }}
+          <b>Output:</b> {{ output }}
         {% endif %}
       </div>
       <div class="alert alert-info" role="alert">
         {% if initialized %}
-          <b>Current State:</b> {{ state }}
+          <b>Current State:</b> {{ current_state }}
         {% else %}
           <b>Current State:</b> {empty}
         {% endif %}
@@ -94,8 +98,12 @@ D] RIGHT(T1) (Y/Y,D), (#/#,accept), (1/1,reject)
         {% if initialized %}
         <b>Step Count:</b> {{ step_count }}
         {% else %}
-        <b>Step Count:</b> 0
+        <b>Step Count:</b> {empty}
         {% endif %}
+      </div>
+      <br>
+      <div class="alert alert-secondary" role="alert" style="margin-top: 13px;">
+        <b>Message:</b> {{ message }}
       </div>
   </div>
 </div>
@@ -105,7 +113,7 @@ D] RIGHT(T1) (Y/Y,D), (#/#,accept), (1/1,reject)
     {% if not initialized %}
       <input type="submit" class="btn btn-danger" id="startBtn" name="start" value="Start">
     {% else %}
-      <input type="submit" class="btn btn-warning" id="stepBtn" name="step" value="Step">
+      <input type="submit" class="btn btn-warning" id="stepBtn" name="step" value="Step" {% if finished %}disabled{% endif %}>
     {% endif %}
     <input type="button" class="btn btn-success" name="finish" value="Fast Run" style="margin-left: 10px;">
     <input type="submit" class="btn btn-secondary" name="reset" value="Reset" style="margin-left: 10px;">
