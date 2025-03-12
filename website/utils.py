@@ -53,6 +53,8 @@ def validateLogicSection(ls, memory):
         if line:
             if "]" in line:
                 state = line.split("]")[0].strip()
+                if state in logic:
+                    return logic, False, "Duplicate state name detected: " + state
                 logic[state] = {"command": None, "memory": None, "transitions": []}
 
     # validate commands and extract transitions
