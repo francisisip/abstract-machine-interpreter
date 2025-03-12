@@ -64,4 +64,65 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("machine-definition").addEventListener("scroll", syncScroll);
     const mdContent = document.getElementById("machine-definition").getAttribute("data-md");
     preloadLineNumbers(mdContent ? mdContent.split("\n").length : 10);
+    
+    const inputContainer = document.getElementById("input-container");
+    if (inputContainer) {
+        const inputString = inputContainer.getAttribute("data-input-string") || "";
+        let index = parseInt(inputContainer.getAttribute("data-index"), 10);
+
+        updateInputDisplay(inputString, index);
+    }
+
+    function updateInputDisplay(input_string, index) {
+        const beforeElement = document.getElementById("input-before");
+        const highlightElement = document.getElementById("input-highlight");
+        const afterElement = document.getElementById("input-after");
+        if (!input_string) {
+            beforeElement.innerHTML = "{empty}";
+            highlightElement.innerHTML = "";
+            afterElement.innerHTML = "";
+            return;
+        }
+
+        if (index >= input_string.length || index < 0) {
+            beforeElement.innerHTML = input_string;
+            highlightElement.innerHTML = "";
+            afterElement.innerHTML = "";
+            return;
+        }
+    
+        beforeElement.innerHTML = input_string.slice(0, index);
+        highlightElement.innerHTML = input_string.charAt(index);
+        afterElement.innerHTML = input_string.slice(index + 1);
+    }
+
+    const eventSource = new EventSource("/stream");
+    
+    eventSource.onmessage = function(event) {
+        try {
+            const data = JSON.parse(event.data);
+            
+            updateInputDisplay(data.input_string, data.index);
+            document.getElementById("memory_structures").innerHTML = data.memory_structures || "<b>Memory:</b> {empty}";
+            document.getElementById("output").innerText = data.output?.trim() ? data.output : "{empty}";
+            document.getElementById("current_state").innerText = data.current_state || "∅";
+            document.getElementById("step_count").innerText = data.step_count || "0";
+            if (data.finished === true) {
+                document.getElementById("status").innerText = data.accepted ? "Accepted" : "Rejected";
+            }
+            document.getElementById("message").innerText = data.message || "";
+    
+            if (data.finished) {
+                eventSource.close();  // Stop listening when finished
+            }
+        } catch (error) {
+            console.error("Error processing incoming data:", error);
+        }
+    };
+    
+    eventSource.onerror = function(error) {
+        console.error("EventSource failed:", error);
+        eventSource.close();
+    };
+    
 });

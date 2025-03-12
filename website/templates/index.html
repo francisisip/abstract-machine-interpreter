@@ -6,9 +6,11 @@
   <span>
     {% if initialized %}
     <b>Input:</b>
-    {{ input_string[:index]|safe }}  <!-- Part before the index -->
-    <span style="color: red; font-weight: bold;">{{ input_string[index] }}</span>  <!-- Highlighted part -->
-    {{ input_string[index+1:]|safe }}  <!-- Part after the index -->
+    <span {% if not streaming %} id="input-container" data-input-string="{{ input_string|safe }}" data-index="{{ index }}" {% endif %}>
+      <span id="input-before"></span>
+      <span id="input-highlight" style="color: red; font-weight: bold;"></span>
+      <span id="input-after"></span>
+    </span>
     {% else %}
     <b>Input:</b> {empty}
     {% endif %}
@@ -17,10 +19,14 @@
 
 <div class="alert alert-warning" role="alert">
   {% if initialized %}
-    {% if memory_structures %}
-    <b></b> {{ memory_structures | safe }}
+    {% if not streaming %}
+      {% if memory_structures %}
+        {{ memory_structures | safe }}
+      {% else %}
+        <b>Memory:</b> {empty}
+      {% endif %}
     {% else %}
-    <b>Memory:</b> {empty}
+      <span id="memory_structures"></span>
     {% endif %}
   {% else %}
     <b>Memory:</b> {empty}
@@ -77,28 +83,34 @@ D] RIGHT(T1) (Y/Y,D), (#/#,accept), (1/1,reject)
   <div class="right-container">
       <br>
       <div class="alert alert-danger" role="alert">
-        {% if output == "" %}
-          <b>Output:</b> {empty}
+        <b>Output:</b> 
+        {% if streaming %}
+            <span id="output"></span>
         {% else %}
-          <b>Output:</b> {{ output }}
+          {% if output == "" %}
+              {empty}
+          {% else %}
+              <span id="output">{{ output }}</span>
+          {% endif %}
         {% endif %}
-      </div>
+      </div>    
       <div class="alert alert-info" role="alert">
         {% if initialized %}
-          <b>Current State:</b> {{ current_state }}
+          <b>Current State:</b> <span id="current_state">{% if not streaming %}{{ current_state }}{% endif %}</span>
         {% else %}
           <b>Current State:</b> ∅
         {% endif %}
       </div>
       <div class="alert alert-primary" role="alert">
         {% if initialized %}
-        <b>Step Count:</b> {{ step_count }}
+        <b>Step Count:</b> <span id="step_count">{% if not streaming %}{{ step_count }}{% endif %}</span>
         {% else %}
         <b>Step Count:</b> 0
         {% endif %}
       </div>
       <div class="alert alert-secondary" role="alert" 
           style="min-height: 95px;">
+          {% if not streaming %}
           <b>Status:</b>
           {% if initialized %}
               {% if finished %}
@@ -109,10 +121,15 @@ D] RIGHT(T1) (Y/Y,D), (#/#,accept), (1/1,reject)
                   {% endif %}
               {% endif %}
           <br>
-          <b>Message: </b> {{ message }}
+          <b>Message: </b> <span id="message">{{ message }}</span>
           {% else %}
           <br>
           <b>Message: </b> 
+          {% endif %}
+          {% else %}
+          <b>Status: </b><span id="status"></span>
+          <br>
+          <b>Message: </b><span id="message"></span>
           {% endif %}
       </div>
   </div>
@@ -123,9 +140,9 @@ D] RIGHT(T1) (Y/Y,D), (#/#,accept), (1/1,reject)
     {% if not initialized %}
       <input type="submit" class="btn btn-danger" id="startBtn" name="start" value="Start">
     {% else %}
-      <input type="submit" class="btn btn-warning" id="stepBtn" name="step" value="Step" {% if finished %}disabled{% endif %}>
+      <input type="submit" class="btn btn-warning" id="stepBtn" name="step" value="Step" {% if finished or streaming %}disabled{% endif %}>
     {% endif %}
-    <input type="submit" class="btn btn-success" name="run" value="Fast Run" style="margin-left: 10px;" {% if finished %}disabled{% endif %}>
+    <input type="submit" class="btn btn-success" name="run" value="Fast Run" style="margin-left: 10px;" {% if finished or streaming %}disabled{% endif %}>
     <input type="submit" class="btn btn-secondary" name="reset" value="Reset" style="margin-left: 10px;">
   </form>
 </div>
