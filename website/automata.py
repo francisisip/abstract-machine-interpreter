@@ -86,15 +86,11 @@ class Automata():
             self.message = "No write symbol defined for state " + self.current_state
 
     def is_finished(self):
-        if self.current_state == "accept":
+        if self.current_state in ["accept", "reject"]:
             self.finished = True
-            self.accepted = True if self.current_state == "accept" else False
-            self.message = "Machine is accepted"
-            
-        elif self.current_state == "reject":
-            self.finished = True
-            self.message = "Machine is rejected"
-    
+            self.accepted = self.current_state == "accept"
+            self.message = f"Machine is {'accepted' if self.accepted else 'rejected'}"
+
     def step(self):
         command = self.transitions[self.current_state]["command"]
         mem_name = self.transitions[self.current_state]["memory"] 
@@ -116,5 +112,16 @@ class Automata():
 
     def run(self):
         while not self.finished:
-            print(f"Step {self.step_count}: Current State -> {self.current_state}")
             self.step()
+            yield {
+                "index": self.index,
+                "input_string": self.input,
+                "memory_structures": self.memory.print_structs(),
+                "current_state": self.current_state,
+                "output": self.output,
+                "step_count": self.step_count,
+                "finished": self.finished,
+                "message": self.message,
+                "accepted": self.accepted,
+            }
+            time.sleep(0.3)
