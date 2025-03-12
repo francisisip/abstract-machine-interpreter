@@ -46,6 +46,8 @@ def initialize_automata(session_id):
         g.automata = Automata(memory_dict, logic_dict, session['input_string'])
         current_app.config['AUTOMATA_STORE'][session_id] = g.automata
 
+    return valid
+
 @views.route('/', methods=['GET', 'POST'])
 def home():
 
@@ -79,8 +81,10 @@ def home():
         # run button for fast run of machine
         if 'run' in request.form:
             if not session['initialized']:
-                initialize_automata(session['session_id'])
-            session['streaming'] = True
+                if initialize_automata(session['session_id']):
+                    session['streaming'] = True
+            else:
+                session['streaming'] = True
 
         # reset button to reset machine and session variables
         if 'reset' in request.form:
