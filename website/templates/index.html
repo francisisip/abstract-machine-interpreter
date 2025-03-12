@@ -3,20 +3,16 @@
 {% block content %}
 
 <div class="alert alert-success" role="alert">
-  {% if index == -1 %}
+  <span>
+    {% if initialized %}
+    <b>Input:</b>
+    {{ input_string[:index]|safe }}  <!-- Part before the index -->
+    <span style="color: red; font-weight: bold;">{{ input_string[index] }}</span>  <!-- Highlighted part -->
+    {{ input_string[index+1:]|safe }}  <!-- Part after the index -->
+    {% else %}
     <b>Input:</b> {empty}
-  {% else %}
-    <span>
-      {% if initialized %}
-      <b>Input:</b>
-      {{ input_string[:index]|safe }}  <!-- Part before the index -->
-      <span style="color: red; font-weight: bold;">{{ input_string[index] }}</span>  <!-- Highlighted part -->
-      {{ input_string[index+1:]|safe }}  <!-- Part after the index -->
-      {% else %}
-      <b>Input:</b> {empty}
-      {% endif %}
-    </span>
-  {% endif %}
+    {% endif %}
+  </span>
 </div>
 
 <div class="alert alert-warning" role="alert">
@@ -91,19 +87,33 @@ D] RIGHT(T1) (Y/Y,D), (#/#,accept), (1/1,reject)
         {% if initialized %}
           <b>Current State:</b> {{ current_state }}
         {% else %}
-          <b>Current State:</b> {empty}
+          <b>Current State:</b> ∅
         {% endif %}
       </div>
       <div class="alert alert-primary" role="alert">
         {% if initialized %}
         <b>Step Count:</b> {{ step_count }}
         {% else %}
-        <b>Step Count:</b> {empty}
+        <b>Step Count:</b> 0
         {% endif %}
       </div>
-      <br>
-      <div class="alert alert-secondary" role="alert" style="margin-top: 13px;">
-        <b>Message:</b> {{ message }}
+      <div class="alert alert-secondary" role="alert" 
+          style="min-height: 95px;">
+          <b>Status:</b>
+          {% if initialized %}
+              {% if finished %}
+                  {% if accepted %}
+                      Accepted
+                  {% else %}
+                      Rejected
+                  {% endif %}
+              {% endif %}
+          <br>
+          <b>Message: </b> {{ message }}
+          {% else %}
+          <br>
+          <b>Message: </b> 
+          {% endif %}
       </div>
   </div>
 </div>
@@ -115,7 +125,7 @@ D] RIGHT(T1) (Y/Y,D), (#/#,accept), (1/1,reject)
     {% else %}
       <input type="submit" class="btn btn-warning" id="stepBtn" name="step" value="Step" {% if finished %}disabled{% endif %}>
     {% endif %}
-    <input type="button" class="btn btn-success" name="finish" value="Fast Run" style="margin-left: 10px;">
+    <input type="submit" class="btn btn-success" name="run" value="Fast Run" style="margin-left: 10px;" {% if finished %}disabled{% endif %}>
     <input type="submit" class="btn btn-secondary" name="reset" value="Reset" style="margin-left: 10px;">
   </form>
 </div>

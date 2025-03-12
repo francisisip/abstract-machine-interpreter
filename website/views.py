@@ -56,14 +56,32 @@ def home():
         if 'step' in request.form:
             g.automata.step()
             session['finished'] = g.automata.finished
+
+        if 'run' in request.form:
+            if not session['initialized']:
+                session['md'] = request.form.get('machine-definition')
+                session['input_string'] = request.form.get('input-string')
+                memory_dict, logic_dict, valid, error = extractMachineDefinition(session['md'])
+
+                if not valid:
+                    flash(error, category='error')
+                else:
+                    session['initialized'] = True
+                    session['finished'] = False
+                    g.automata = Automata(memory_dict, logic_dict, session['input_string'])
+                    current_app.config['AUTOMATA_STORE'][session_id] = g.automata
+                    g.automata.run()
+                    session['finished'] = g.automata.finished
+            else:
+                g.automata.run()
+                session['finished'] = g.automata.finished
            
         # reset button to reset machine
         if 'reset' in request.form:
             if session_id in current_app.config['AUTOMATA_STORE']:
                 del current_app.config['AUTOMATA_STORE'][session_id]
-
-            session.pop('initialized', None)
             session['initialized'] = False
+            session['finished'] = False
 
     return render_template("index.html", 
                            type="Step by State", 
@@ -76,6 +94,7 @@ def home():
                            output=g.automata.output if g.automata else "",
                            step_count=g.automata.step_count if g.automata else 0,
                            finished=session['finished'],
+                           accepted=g.automata.accepted if g.automata else False,
                            message=g.automata.message if g.automata else "")
 
 @views.route('/multiple-run', methods=['GET', 'POST'])
