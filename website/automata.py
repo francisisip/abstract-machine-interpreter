@@ -7,7 +7,7 @@ class Automata():
         self.memory = init_memory(memory_dict)
         self.transitions = logic_dict
         self.input = input_string
-        self.index = 0 if input_string else -1
+        self.index = 0
         self.current_state = next(iter(logic_dict))
         self.output = ""
         self.step_count = 0
@@ -16,22 +16,27 @@ class Automata():
         self.message = ""
 
     def scan(self, step=1):
-        if (step == 1 and self.index > len(self.input)) or (step == -1 and self.index < -1):
+        if self.input == "":
             self.finished = True
-            self.message = "Tape head is out of bounds"
+            self.message = "Input string is empty"
+        
         else:
-            symbol = "#" if self.index in [-1, len(self.input)] else self.input[self.index]
-            matched_states = [item[1] for item in self.transitions[self.current_state]["transitions"] if item[0] == symbol]
-
-            if matched_states:
-                next_state = random.choice(matched_states)
-                self.current_state = next_state
-                if (self.index == -1 and step == 1) or (self.index == len(self.input) and step == -1) or (self.index not in [-1, len(self.input)]):
-                    self.index += step
-                self.step_count += 1
-            else:
+            if (step == 1 and self.index > len(self.input)) or (step == -1 and self.index < -1):
                 self.finished = True
-                self.message = "No matching transition found for symbol " + symbol
+                self.message = "Tape head is out of bounds"
+            else:
+                symbol = "#" if self.index in [-1, len(self.input)] else self.input[self.index]
+                matched_states = [item[1] for item in self.transitions[self.current_state]["transitions"] if item[0] == symbol]
+
+                if matched_states:
+                    next_state = random.choice(matched_states)
+                    self.current_state = next_state
+                    if (self.index == -1 and step == 1) or (self.index == len(self.input) and step == -1) or (self.index not in [-1, len(self.input)]):
+                        self.index += step
+                    self.step_count += 1
+                else:
+                    self.finished = True
+                    self.message = "No matching transition found for symbol " + symbol
         
     def print(self):
         matched_transitions = self.transitions[self.current_state]["transitions"]
@@ -85,6 +90,7 @@ class Automata():
             self.message = f"Machine is {'accepted' if self.accepted else 'rejected'}"
 
     def step(self):
+        print(self.input)
         command = self.transitions[self.current_state]["command"]
         mem_name = self.transitions[self.current_state]["memory"] 
 
