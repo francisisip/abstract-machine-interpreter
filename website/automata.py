@@ -16,26 +16,19 @@ class Automata():
         self.message = ""
 
     def scan(self, step=1):
-        if (step == 1 and self.index >= len(self.input)) or (step == -1 and self.index <= 0):
+        if (step == 1 and self.index > len(self.input)) or (step == -1 and self.index < -1):
             self.finished = True
             self.message = "Tape head is out of bounds"
-        
         else:
-            symbol = self.input[self.index]
+            symbol = "#" if self.index in [-1, len(self.input)] else self.input[self.index]
             matched_states = [item[1] for item in self.transitions[self.current_state]["transitions"] if item[0] == symbol]
 
             if matched_states:
                 next_state = random.choice(matched_states)
                 self.current_state = next_state
-
-                if step == 1 and self.index < len(self.input):  
-                    self.index += 1
-                    self.step_count += 1
-                    
-                elif step == -1 and self.index > 0:
-                    self.index -= 1
-                    self.step_count += 1
-
+                if (self.index == -1 and step == 1) or (self.index == len(self.input) and step == -1) or (self.index not in [-1, len(self.input)]):
+                    self.index += step
+                self.step_count += 1
             else:
                 self.finished = True
                 self.message = "No matching transition found for symbol " + symbol
@@ -124,4 +117,4 @@ class Automata():
                 "message": self.message,
                 "accepted": self.accepted,
             }
-            time.sleep(0.3)
+            time.sleep(0.2)
