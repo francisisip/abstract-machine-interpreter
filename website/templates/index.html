@@ -109,15 +109,15 @@ D] RIGHT(T1) (Y/Y,D), (#/#,accept), (1/1,reject)
         {% endif %}
       </div>
       <div class="alert alert-secondary" role="alert" 
-          style="min-height: 95px;">
+          style="margin-top: 23px; min-height: 50px;">
           {% if not streaming %}
           <b>Status:</b>
           {% if initialized %}
               {% if finished %}
                   {% if accepted %}
-                      Accepted
+                      halt-accept
                   {% else %}
-                      Rejected
+                      halt-reject
                   {% endif %}
               {% endif %}
           <br>

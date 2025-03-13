@@ -108,7 +108,7 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("current_state").innerText = data.current_state || "∅";
             document.getElementById("step_count").innerText = data.step_count || "0";
             if (data.finished === true) {
-                document.getElementById("status").innerText = data.accepted ? "Accepted" : "Rejected";
+                document.getElementById("status").innerText = data.accepted ? "halt-accept" : "halt-reject";
             }
             document.getElementById("message").innerText = data.message || "";
     
