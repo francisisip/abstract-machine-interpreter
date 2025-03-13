@@ -125,13 +125,6 @@ def validateLogicSection(ls, memory):
         else:
             return logic, False, f"Invalid .LOGIC definition: '{line}'"
 
-    # check if all destination states are defined
-    for state, data in logic.items():
-        for transition in data["transitions"]:
-            dest_state = transition[-1]
-            if dest_state not in logic and dest_state not in {"accept", "reject"}:
-                return logic, False, f"State '{dest_state}' used in transitions is not defined in .LOGIC"
-
     return logic, True, "Valid .LOGIC section"
 
 def extractMachineDefinition(md):

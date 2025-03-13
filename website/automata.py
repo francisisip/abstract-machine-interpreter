@@ -16,78 +16,116 @@ class Automata():
         self.message = ""
 
     def scan(self, step=1):
-        if self.input == "":
+        # case for empty input string 
+        if not self.input:
             self.finished = True
             self.message = "input string is empty"
-        
-        else:
-            if (step == 1 and self.index > len(self.input)) or (step == -1 and self.index < -1):
-                self.finished = True
-                self.message = "tape head is out of bounds"
-            else:
-                symbol = "#" if self.index in [-1, len(self.input)] else self.input[self.index]
-                matched_states = [item[1] for item in self.transitions[self.current_state]["transitions"] if item[0] == symbol]
+            return
 
-                if matched_states:
-                    next_state = random.choice(matched_states)
-                    self.current_state = next_state
-                    if (self.index == -1 and step == 1) or (self.index == len(self.input) and step == -1) or (self.index not in [-1, len(self.input)]):
-                        self.index += step
-                    self.step_count += 1
-                else:
-                    self.finished = True
-                    self.message = f"no transition for \'{symbol}\' in state {self.current_state}"
+        # case for out of bounds tape head
+        if (step == 1 and self.index > len(self.input)) or (step == -1 and self.index < -1):
+            self.finished = True
+            self.message = "tape head is out of bounds"
+            return
+
+        # extract symbol and list of potential states
+        symbol = "#" if self.index in [-1, len(self.input)] else self.input[self.index]
+        matched_states = [item[1] for item in self.transitions[self.current_state]["transitions"] if item[0] == symbol]
+
+        # case for no transition for current symbol
+        if not matched_states:
+            self.finished = True
+            self.message = f"no transitions for {symbol} in state {self.current_state}"
+            return
+    
+        # obtain and validate next state
+        next_state = random.choice(matched_states)
+        self.is_valid_state(next_state)
+
+        # updates current state, index, and step count
+        if not self.finished:
+            self.current_state = next_state
+
+            if (self.index == -1 and step == 1) or (self.index == len(self.input) and step == -1) or (self.index not in [-1, len(self.input)]):
+                self.index += step
+
+            self.step_count += 1            
         
     def print(self):
+        # extract potential transitions
         matched_transitions = self.transitions[self.current_state]["transitions"]
 
-        if matched_transitions:
-            output, next_state = random.choice(matched_transitions)
-            
-            self.output += output
-            self.current_state = next_state
-            self.step_count += 1
-            
-        else:
+        if not matched_transitions:
             self.finished = True
             self.message = "no output defined for state " + self.current_state
+            return
+    
+        # obtain output symbol and next state, validate next state
+        output, next_state = random.choice(matched_transitions)
+        self.is_valid_state(next_state)
+
+        # updates current state, output, and step count
+        if not self.finished:
+            self.current_state = next_state
+            self.output += output
+            self.step_count += 1    
     
     def read(self, mem_name):
-        if not self.memory.is_empty(mem_name):
-            symbol = self.memory.peek(mem_name)
-            matched_states = [item[1] for item in self.transitions[self.current_state]["transitions"] if item[0] == symbol]
-
-            if matched_states:
-                next_state = random.choice(matched_states)
-                self.current_state = next_state
-                self.memory.read(mem_name)
-                self.step_count += 1
-
-            else:
-                self.finished = True
-                self.message = f"no transition for \'{symbol}\' in state {self.current_state}"
-            
-        else:
+        # case for empty memory
+        if self.memory.is_empty(mem_name):
             self.finished = True
             self.message = f"memory {mem_name} is empty"
+            return
+        
+        # extract symbol and list of potential states
+        symbol = self.memory.peek(mem_name)
+        matched_states = [item[1] for item in self.transitions[self.current_state]["transitions"] if item[0] == symbol]
 
+        # case for no transition for current symbol
+        if not matched_states:
+            self.finished = True
+            self.message = f"no transitions for {symbol} in state {self.current_state}"
+            return
+        
+        # obtain and validate next state
+        next_state = random.choice(matched_states)
+        self.is_valid_state(next_state)
+
+        # updates current state, memory, and step count
+        if not self.finished:    
+            self.current_state = next_state
+            self.memory.read(mem_name)
+            self.step_count += 1
+        
     def write(self, mem_name):
-        possible_transitions = self.transitions[self.current_state]["transitions"]
-        if possible_transitions:
-            symbol, next_state = random.choice(possible_transitions)
+        # extract potential transitions
+        matched_transitions = self.transitions[self.current_state]["transitions"]
+        
+        if not matched_transitions:
+            self.finished = True
+            self.message = "no write symbol for state " + self.current_state
+            return
+
+        #obtain write symbol and next state, validate next state
+        symbol, next_state = random.choice(matched_transitions)
+        self.is_valid_state(next_state)
+
+        # updates current state, memory, and step count
+        if not self.finished:
             self.memory.write(mem_name, symbol)
             self.current_state = next_state
             self.step_count += 1
-
-        else:
-            self.finished = True
-            self.message = "no write symbol for state " + self.current_state
 
     def is_finished(self):
         if self.current_state in ["accept", "reject"]:
             self.finished = True
             self.accepted = self.current_state == "accept"
             self.message = f"machine is {'accepted' if self.accepted else 'rejected'}"
+    
+    def is_valid_state(self, state):
+        if state not in self.transitions and state not in ["accept", "reject"]:
+            self.finished = True
+            self.message = f"state \'{state}\' is not defined"
 
     def step(self):
         command = self.transitions[self.current_state]["command"]
