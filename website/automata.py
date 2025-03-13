@@ -71,6 +71,12 @@ class Automata():
             self.step_count += 1    
     
     def read(self, mem_name):
+        # case for memory structure not existing
+        if not self.memory.exists(mem_name):
+            self.finished = True
+            self.message = f"memory {mem_name} is not defined"
+            return
+
         # case for empty memory
         if self.memory.is_empty(mem_name):
             self.finished = True
@@ -98,6 +104,12 @@ class Automata():
             self.step_count += 1
         
     def write(self, mem_name):
+        # case for memory structure not existing
+        if not self.memory.exists(mem_name):
+            self.finished = True
+            self.message = f"memory {mem_name} is not defined"
+            return
+
         # extract potential transitions
         matched_transitions = self.transitions[self.current_state]["transitions"]
         

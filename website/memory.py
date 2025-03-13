@@ -38,6 +38,9 @@ class MemoryClass:
         elif name in self.queue:
             return self.queue[name].is_empty()
         
+    def exists(self, name):
+        return name in self.stack or name in self.queue
+    
     def print_structs(self):
         val = ""
         for stack in self.stack.values():
