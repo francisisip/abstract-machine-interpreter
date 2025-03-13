@@ -167,7 +167,7 @@ def init_memory(memory_dict):
 
     return memory
 
-def highlight_mem(memory_structures):
+def format_mem(memory_structures):
     memory_structures = re.sub(r'(\bS\d+:|\bQ\d+:|\bT\d+:)', r'<b>\1</b>', memory_structures)
     memory_structures = memory_structures.replace("\n", "<br>")
 
