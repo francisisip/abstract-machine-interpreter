@@ -2,37 +2,31 @@
 
 {% block content %}
 
-<div class="alert alert-success" role="alert">
+<div class="alert alert-success text-center d-flex align-items-center justify-content-center" role="alert" style="font-size: 1.15rem;"">
   <span>
     {% if initialized %}
-    <b>Input:</b>
     <span {% if not streaming %} id="input-container" data-input-string="{{ input_string|safe }}" data-index="{{ index }}" {% endif %}>
       <span id="input-before"></span>
       <span id="input-highlight" style="color: red; font-weight: bold;"></span>
       <span id="input-after"></span>
     </span>
     {% else %}
-    <b>Input:</b> {empty}
+    [——— <b>input</b> ———]
     {% endif %}
   </span>
 </div>
 
-<div class="alert alert-warning" role="alert">
+<div class="alert alert-warning text-center d-flex align-items-center justify-content-center" role="alert" style="font-size: 1.15rem;">
   {% if initialized %}
     {% if not streaming %}
-      {% if memory_structures %}
-        {{ memory_structures | safe }}
-      {% else %}
-        <b>Memory:</b> {empty}
-      {% endif %}
+      {{ memory_structures | safe if memory_structures else "<b>[ ∅ ]</b>" | safe }}
     {% else %}
       <span id="memory_structures"></span>
     {% endif %}
   {% else %}
-    <b>Memory:</b> {empty}
+  [——— <b>memory</b> ———]
   {% endif %}
 </div>
-
 
 <div class="content-container">
   <div class="left-container">
@@ -83,15 +77,18 @@ D] RIGHT(T1) (Y/Y,D), (#/#,accept), (1/1,reject)
   <div class="right-container">
       <br>
       <div class="alert alert-danger" role="alert">
-        <b>Output:</b> 
-        {% if streaming %}
-            <span id="output"></span>
-        {% else %}
-          {% if output == "" %}
-              {empty}
+        {% if initialized %}
+          {% if streaming %}
+            <b>Output: </b> [<span id="output"></span>]
           {% else %}
-              <span id="output">{{ output }}</span>
+            {% if output == "" %}
+              <b>Output: </b> [ ]
+            {% else %}
+              <b>Output: </b> [<span id="output">{{ output }}</span>]
+            {% endif %}
           {% endif %}
+        {% else %}
+          <b>Output: </b>[ ]
         {% endif %}
       </div>    
       <div class="alert alert-info" role="alert">

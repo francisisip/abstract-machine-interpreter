@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const highlightElement = document.getElementById("input-highlight");
         const afterElement = document.getElementById("input-after");
         if (!input_string) {
-            beforeElement.innerHTML = "{empty}";
+            beforeElement.innerHTML = "<b>#############</b>";
             highlightElement.innerHTML = "";
             afterElement.innerHTML = "";
             return;
@@ -103,8 +103,8 @@ document.addEventListener("DOMContentLoaded", function () {
             const data = JSON.parse(event.data);
             
             updateInputDisplay(data.input_string, data.index);
-            document.getElementById("memory_structures").innerHTML = data.memory_structures || "<b>Memory:</b> {empty}";
-            document.getElementById("output").innerText = data.output?.trim() ? data.output : "{empty}";
+            document.getElementById("memory_structures").innerHTML = data.memory_structures || "<b>[ ∅ ]</b>";
+            document.getElementById("output").innerText = data.output || " ";
             document.getElementById("current_state").innerText = data.current_state || "∅";
             document.getElementById("step_count").innerText = data.step_count || "0";
             if (data.finished === true) {
