@@ -18,12 +18,12 @@ class Automata():
     def scan(self, step=1):
         if self.input == "":
             self.finished = True
-            self.message = "Input string is empty"
+            self.message = "input string is empty"
         
         else:
             if (step == 1 and self.index > len(self.input)) or (step == -1 and self.index < -1):
                 self.finished = True
-                self.message = "Tape head is out of bounds"
+                self.message = "tape head is out of bounds"
             else:
                 symbol = "#" if self.index in [-1, len(self.input)] else self.input[self.index]
                 matched_states = [item[1] for item in self.transitions[self.current_state]["transitions"] if item[0] == symbol]
@@ -36,7 +36,7 @@ class Automata():
                     self.step_count += 1
                 else:
                     self.finished = True
-                    self.message = "No matching transition found for symbol " + symbol
+                    self.message = f"no transition for \'{symbol}\' in state {self.current_state}"
         
     def print(self):
         matched_transitions = self.transitions[self.current_state]["transitions"]
@@ -50,7 +50,7 @@ class Automata():
             
         else:
             self.finished = True
-            self.message = "No output defined for state " + self.current_state
+            self.message = "no output defined for state " + self.current_state
     
     def read(self, mem_name):
         if not self.memory.is_empty(mem_name):
@@ -65,11 +65,11 @@ class Automata():
 
             else:
                 self.finished = True
-                self.message = f"No matching transition found for symbol {symbol} in memory {mem_name}"
+                self.message = f"no transition for \'{symbol}\' in state {self.current_state}"
             
         else:
             self.finished = True
-            self.message = f"Memory structure {mem_name} is empty"
+            self.message = f"memory {mem_name} is empty"
 
     def write(self, mem_name):
         possible_transitions = self.transitions[self.current_state]["transitions"]
@@ -81,16 +81,15 @@ class Automata():
 
         else:
             self.finished = True
-            self.message = "No write symbol defined for state " + self.current_state
+            self.message = "no write symbol for state " + self.current_state
 
     def is_finished(self):
         if self.current_state in ["accept", "reject"]:
             self.finished = True
             self.accepted = self.current_state == "accept"
-            self.message = f"Machine is {'accepted' if self.accepted else 'rejected'}"
+            self.message = f"machine is {'accepted' if self.accepted else 'rejected'}"
 
     def step(self):
-        print(self.input)
         command = self.transitions[self.current_state]["command"]
         mem_name = self.transitions[self.current_state]["memory"] 
 
@@ -123,4 +122,4 @@ class Automata():
                 "message": self.message,
                 "accepted": self.accepted,
             }
-            time.sleep(0.2)
+            time.sleep(0.1)
