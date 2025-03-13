@@ -1,7 +1,7 @@
 import uuid
-from flask import Blueprint, render_template, request, flash, session, g, current_app, Response, stream_with_context, json
 from website.utils import*
 from website.automata import*
+from flask import Blueprint, render_template, request, flash, session, g, current_app, Response, stream_with_context, json
 
 views = Blueprint('views', __name__)
 
@@ -21,16 +21,14 @@ def stream():
     def event_stream():
         if g.automata and session['streaming']:
             for state_update in g.automata.run():
-                state_update['memory_structures'] = highlight_mem(state_update['memory_structures'])
-                if state_update['finished']:  
-                    session['finished'] = True
-                    session['streaming'] = False
+                state_update['memory_structures'] = format_mem(state_update['memory_structures']) # for formatting
                 yield f"data: {json.dumps(state_update)}\n\n"
     
     return Response(stream_with_context(event_stream()), content_type='text/event-stream')
 
 # instantiate automata object from form data and store in session
 def initialize_automata(session_id):
+
     # store form data in session variables
     session['md'] = request.form.get('machine-definition')
     session['input_string'] = request.form.get('input-string')
@@ -42,7 +40,6 @@ def initialize_automata(session_id):
         flash(error, category='error')
     else:
         session['initialized'] = True
-        session['finished'] = False
         g.automata = Automata(memory_dict, logic_dict, session['input_string'])
         current_app.config['AUTOMATA_STORE'][session_id] = g.automata
 
@@ -101,7 +98,7 @@ def home():
                            input_string=session['input_string'],
                            index=g.automata.index if g.automata else 0,
                            current_state=g.automata.current_state if g.automata else "",
-                           memory_structures=highlight_mem(g.automata.memory.print_structs()) if g.automata else "",
+                           memory_structures=format_mem(g.automata.memory.print_structs()) if g.automata else "",
                            output=g.automata.output if g.automata else "",
                            step_count=g.automata.step_count if g.automata else 0,
                            finished=session['finished'],
