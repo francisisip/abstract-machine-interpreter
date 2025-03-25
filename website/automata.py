@@ -47,15 +47,15 @@ class Automata():
         
     def print(self):
         # extract potential transitions
-        matched_transitions = self.transitions[self.current_state]["transitions"]
+        potential_transitions = self.transitions[self.current_state]["transitions"]
 
-        if not matched_transitions:
+        if not potential_transitions:
             self.finished = True
             self.message = "no output defined for state " + self.current_state
             return
     
         # obtain output symbol and next state, validate next state
-        output, next_state = random.choice(matched_transitions)
+        output, next_state = random.choice(potential_transitions)
         self.is_valid_state(next_state)
 
         # updates current state, output, and step count
@@ -105,15 +105,15 @@ class Automata():
             return
 
         # extract potential transitions
-        matched_transitions = self.transitions[self.current_state]["transitions"]
+        potential_transitions = self.transitions[self.current_state]["transitions"]
         
-        if not matched_transitions:
+        if not potential_transitions:
             self.finished = True
             self.message = "no write symbol for state " + self.current_state
             return
 
         #obtain write symbol and next state, validate next state
-        symbol, next_state = random.choice(matched_transitions)
+        symbol, next_state = random.choice(potential_transitions)
         self.is_valid_state(next_state)
 
         # updates current state, memory, and step count
@@ -121,6 +121,37 @@ class Automata():
             self.memory.write(mem_name, symbol)
             self.current_state = next_state
             self.step_count += 1
+
+    def move(self, mem_name, step):
+        # case for memory structure not existing
+        if not self.memory.exists(mem_name):
+            self.finished = True
+            self.message = f"memory {mem_name} is not defined"
+            return
+        
+         # obtain read symbol
+        symbol = self.memory.read(mem_name, step)
+        
+        # extract matched transitions
+        matched_transitions = [(item[1], item(2)) for item in self.transitions[self.current_state]["transitions"] if item[0] == symbol]
+        print(matched_transitions)
+
+        if not matched_transitions:
+            self.finished = True
+            self.message = "no matched symbol for state " + self.current_state
+            return
+        
+        # obtain symbol and next state, validate next state
+        replacement_symbol, next_state = random.choice(matched_transitions)
+        self.is_valid_state(next_state)
+        print(replacement_symbol, next_state)
+
+        # updates current state, memory, and step count
+        if not self.finished:
+            self.memory.write(mem_name, replacement_symbol)
+            self.current_state = next_state
+            self.step_count += 1
+
 
     def is_finished(self):
         if self.current_state in ["accept", "reject"]:
@@ -149,6 +180,10 @@ class Automata():
             self.read(mem_name)
         elif command == "WRITE":
             self.write(mem_name)
+        elif command == "LEFT":
+            self.move(mem_name, -1)
+        elif command == "RIGHT":
+            self.move(mem_name, 1)
 
         self.is_finished()
 

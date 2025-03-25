@@ -1,30 +1,38 @@
 from website.memory_structs.stack import Stack
 from website.memory_structs.queue import Queue
-
+from website.memory_structs.tape import Tape
 class MemoryClass:
     def __init__ (self):
         self.stack = {}
         self.queue = {}
+        self.tape = {}
 
-    def initialize(self, struct_name, struct_type):
+    def initialize(self, struct_name, struct_type, is_input_tape=False):
         if struct_type == "STACK":
             if struct_name not in self.stack:
                 self.stack[struct_name] = Stack(struct_name)
         elif struct_type == "QUEUE":
             if struct_name not in self.queue:
                 self.queue[struct_name] = Queue(struct_name)
+        elif struct_type == "TAPE":
+            if struct_name not in self.queue:
+                self.tape[struct_name] = Tape(struct_name, is_input_tape)
 
     def write(self, name, value):
         if name in self.stack:
             self.stack[name].push(value)
         elif name in self.queue:
             self.queue[name].append(value)
+        elif name in self.tape:
+            self.tape[name].write(value)
 
-    def read(self, name):
+    def read(self, name, step=0):
         if name in self.stack:
             return self.stack[name].pop()
         elif name in self.queue:
             return self.queue[name].pop()
+        elif name in self.tape:
+            return self.tape[name].read(step)
         
     def peek(self, name):
         if name in self.stack:
@@ -37,9 +45,11 @@ class MemoryClass:
             return self.stack[name].is_empty()
         elif name in self.queue:
             return self.queue[name].is_empty()
+        elif name in self.tape:
+            return self.tape[name].is_empty()
         
     def exists(self, name):
-        return name in self.stack or name in self.queue
+        return name in self.stack or name in self.queue or name in self.tape
     
     def print_structs(self):
         val = ""
@@ -48,5 +58,8 @@ class MemoryClass:
 
         for queue in self.queue.values():
             val = val + queue.print() + "\n"
+
+        for tape in self.tape.values():
+            val = val + tape.print() + "\n"
 
         return val
