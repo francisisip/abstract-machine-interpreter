@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const highlightElement = document.getElementById("input-highlight");
         const afterElement = document.getElementById("input-after");
         if (!input_string) {
-            beforeElement.innerHTML = "<b>#############</b>";
+            beforeElement.innerHTML = "<b>##</b>";
             highlightElement.innerHTML = "";
             afterElement.innerHTML = "";
             return;

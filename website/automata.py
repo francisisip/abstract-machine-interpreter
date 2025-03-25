@@ -7,7 +7,7 @@ class Automata():
         self.memory = init_memory(memory_dict)
         self.transitions = logic_dict
         self.input = input_string
-        self.index = 0
+        self.index = -1
         self.current_state = next(iter(logic_dict))
         self.output = ""
         self.step_count = 0
@@ -16,20 +16,14 @@ class Automata():
         self.message = ""
 
     def scan(self, step=1):
-        # case for empty input string 
-        if not self.input:
-            self.finished = True
-            self.message = "input string is empty"
-            return
-
         # case for out of bounds tape head
-        if (step == 1 and self.index > len(self.input)) or (step == -1 and self.index < -1):
+        if (step == 1 and self.index >= len(self.input)) or (step == -1 and self.index <= -1):
             self.finished = True
-            self.message = "tape head is out of bounds"
+            self.message = "pointer is out of bounds"
             return
 
-        # extract symbol and list of potential states
-        symbol = "#" if self.index in [-1, len(self.input)] else self.input[self.index]
+        # extract symbol based on step and list of potential states
+        symbol = "#" if (self.index == 0 and step == -1) or (self.index == len(self.input) - 1 and step == 1) else self.input[self.index + step]
         matched_states = [item[1] for item in self.transitions[self.current_state]["transitions"] if item[0] == symbol]
 
         # case for no transition for current symbol
