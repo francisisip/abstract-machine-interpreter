@@ -1,5 +1,5 @@
 import re
-from website.memory import MemoryClass
+from src.memory import MemoryClass
 
 def split_sections(md):
     data_section = None

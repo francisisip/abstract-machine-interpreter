@@ -1,6 +1,5 @@
-from website.memory_structs.stack import Stack
-from website.memory_structs.queue import Queue
-from website.memory_structs.tape import Tape
+from src.storage import Stack, Queue, Tape
+
 class MemoryClass:
     def __init__ (self):
         self.stack = {}

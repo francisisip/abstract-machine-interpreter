@@ -1,6 +1,6 @@
 import uuid
-from website.utils import*
-from website.automata import*
+from src.helpers import*
+from src.automata import*
 from flask import Blueprint, render_template, request, flash, session, g, current_app, Response, stream_with_context, json
 
 views = Blueprint('views', __name__)

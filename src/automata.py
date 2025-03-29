@@ -1,4 +1,4 @@
-from website.utils import init_memory
+from src.helpers import init_memory
 import random
 import time
 
