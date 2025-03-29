@@ -1,5 +1,4 @@
 import re
-from src.memory import MemoryClass
 
 def split_sections(md):
     data_section = None
@@ -152,7 +151,7 @@ def extractMachineDefinition(md):
 
     return memory_dict, logic_dict, True, "Valid machine definition"
 
-def format_mem(memory_structures):
+def format_memory(memory_structures):
     memory_structures = re.sub(r'(\bS\d+:|\bQ\d+:|\bT\d+:)', r'<b>\1</b>', memory_structures)
     memory_structures = memory_structures.replace("\n", "<br>")
 

@@ -200,6 +200,8 @@ class Automata():
 
     def run(self):
         while not self.finished:
-            self.step()
             self.record_step()
+            self.step()
+        
+        self.record_step()
         return self.steps
