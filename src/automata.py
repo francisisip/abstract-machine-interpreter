@@ -1,10 +1,8 @@
-from src.helpers import init_memory
 import random
-import time
 
 class Automata():
-    def __init__(self, memory_dict, logic_dict, input_string):
-        self.memory = init_memory(memory_dict)
+    def __init__(self, memory, logic_dict, input_string):
+        self.memory = memory
         self.transitions = logic_dict
         self.input = input_string
         self.index = -1
@@ -14,6 +12,7 @@ class Automata():
         self.finished = False
         self.accepted = False
         self.message = ""
+        self.steps = []
 
     def scan(self, step=1):
         # case for out of bounds tape head
@@ -152,7 +151,6 @@ class Automata():
             self.current_state = next_state
             self.step_count += 1
 
-
     def is_finished(self):
         if self.current_state in ["accept", "reject"]:
             self.finished = True
@@ -187,18 +185,21 @@ class Automata():
 
         self.is_finished()
 
+    def record_step(self):
+        self.steps.append({
+            "index": self.index,
+            "input_string": self.input,
+            "memory_structures": self.memory.print_structs(),
+            "current_state": self.current_state,
+            "output": self.output,
+            "step_count": self.step_count,
+            "finished": self.finished,
+            "message": self.message,
+            "accepted": self.accepted,
+        })
+
     def run(self):
         while not self.finished:
             self.step()
-            yield {
-                "index": self.index,
-                "input_string": self.input,
-                "memory_structures": self.memory.print_structs(),
-                "current_state": self.current_state,
-                "output": self.output,
-                "step_count": self.step_count,
-                "finished": self.finished,
-                "message": self.message,
-                "accepted": self.accepted,
-            }
-            time.sleep(0.1)
+            self.record_step()
+        return self.steps

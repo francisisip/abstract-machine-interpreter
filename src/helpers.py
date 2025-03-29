@@ -152,19 +152,6 @@ def extractMachineDefinition(md):
 
     return memory_dict, logic_dict, True, "Valid machine definition"
 
-def init_memory(memory_dict):
-    memory = MemoryClass()
-    is_input_tape = False
-    
-    for mem, mem_type in memory_dict.items():
-        is_tape = mem_type in {"TAPE", "2D_TAPE"}
-        memory.initialize(mem, mem_type, not is_input_tape and is_tape)
-        if is_tape:
-            is_input_tape = True
-    
-    return memory
-
-
 def format_mem(memory_structures):
     memory_structures = re.sub(r'(\bS\d+:|\bQ\d+:|\bT\d+:)', r'<b>\1</b>', memory_structures)
     memory_structures = memory_structures.replace("\n", "<br>")

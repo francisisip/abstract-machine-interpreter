@@ -1,57 +1,33 @@
 import uuid
 from src.helpers import*
 from src.automata import*
-from flask import Blueprint, render_template, request, flash, session, g, current_app, Response, stream_with_context, json
+from flask import Blueprint, render_template, request, flash, session
+
+def setup_memory(memory_dict):
+    memory_class = MemoryClass()
+    is_input_tape = False
+    
+    for mem, mem_type in memory_dict.items():
+        is_tape = mem_type in {"TAPE", "2D_TAPE"}
+        memory_class.add(mem, mem_type, not is_input_tape and is_tape)
+        if is_tape:
+            is_input_tape = True
+    
+    return memory_class
+
+def build_machine(memory_dict, logic_dict):
+    memory = setup_memory(memory_dict)
+    automata = Automata(memory, logic_dict, session['input_string'])
+    return automata
 
 views = Blueprint('views', __name__)
-
-# load automata object from session
-@views.before_request
-def load_automata():
-    session_id = session.get('session_id')
-    
-    if session_id and session_id in current_app.config['AUTOMATA_STORE']:
-        g.automata = current_app.config['AUTOMATA_STORE'][session_id]
-    else:
-        g.automata = None
-
-# stream updates from automata object for fast run
-@views.route('/stream')
-def stream():
-    def event_stream():
-        if g.automata and session['streaming']:
-            for state_update in g.automata.run():
-                state_update['memory_structures'] = format_mem(state_update['memory_structures']) # for formatting
-                yield f"data: {json.dumps(state_update)}\n\n"
-    
-    return Response(stream_with_context(event_stream()), content_type='text/event-stream')
-
-# instantiate automata object from form data and store in session
-def initialize_automata(session_id):
-
-    # store form data in session variables
-    session['md'] = request.form.get('machine-definition')
-    session['input_string'] = request.form.get('input-string')
-
-    # extract machine definition if valid machine syntax
-    memory_dict, logic_dict, valid, error = extractMachineDefinition(session['md'])
-
-    if not valid:
-        flash(error, category='error')
-    else:
-        session['initialized'] = True
-        g.automata = Automata(memory_dict, logic_dict, session['input_string'])
-        current_app.config['AUTOMATA_STORE'][session_id] = g.automata
-
-    return valid
-
 @views.route('/', methods=['GET', 'POST'])
 def home():
 
     if 'session_id' not in session:
         session['session_id'] = str(uuid.uuid4()) 
 
-    # initialize session variables
+    # initialize session variables and set default values
     if 'md' not in session:
         session['md'] = ""
     if 'input_string' not in session:
@@ -60,51 +36,64 @@ def home():
         session['initialized'] = False
     if 'finished' not in session:
         session['finished'] = False
-    if 'streaming' not in session:
-        session['streaming'] = False
+    if 'steps' not in session:
+        session['steps'] = []
+    if 'current_step' not in session:
+        session['current_step'] = 0
+    last_state = {}
 
-    # handle different types of requests
     if request.method == 'POST':
 
-        # start button to initialize machine
         if 'start' in request.form:
-            initialize_automata(session['session_id'])
-    
-        # step button to step through machine
-        if 'step' in request.form:
-            g.automata.step()
-            session['finished'] = g.automata.finished
+             # store form data in session variables
+            session['md'] = request.form.get('machine-definition')
+            session['input_string'] = request.form.get('input-string')
 
-        # run button for fast run of machine
-        if 'run' in request.form:
-            if not session['initialized']:
-                if initialize_automata(session['session_id']):
-                    session['streaming'] = True
+            # extract machine definition if valid machine syntax
+            memory_dict, logic_dict, valid, error = extractMachineDefinition(session['md'])
+
+            if not valid:
+                flash(error, category='error')
             else:
-                session['streaming'] = True
+                automata = build_machine(memory_dict, logic_dict)
+                session['steps'] = automata.run()
+                session['current_step'] = 0
+                session['initialized'] = True
+
+        if "step" in request.form and not session['finished']:
+            session["current_step"] += 1
+            session["finished"] = session["current_step"] == len(session["steps"]) - 1
+
+        # # run button for fast run of machine
+        # if 'run' in request.form:
+        #     if not session['initialized']:
+        #         if initialize_automata(session['session_id']):
+        #             session['streaming'] = True
+        #     else:
+        #         session['streaming'] = True
 
         # reset button to reset machine and session variables
         if 'reset' in request.form:
-            if session['session_id'] in current_app.config['AUTOMATA_STORE']:
-                del current_app.config['AUTOMATA_STORE'][session['session_id']]
-            session['initialized'] = False
+            session.pop('steps', None)
+            session.pop('current_step', None)
             session['finished'] = False
-            session['streaming'] = False
+            session['initialized'] = False
+
+    last_state = session['steps'][session['current_step']] if session.get('steps') else {}
 
     return render_template("index.html", 
-                           type="Step by State", 
-                           initialized=session['initialized'], 
+                           procedure="Step by State", 
+                           initialized=session['initialized'],
                            md=session['md'], 
                            input_string=session['input_string'],
-                           index=g.automata.index if g.automata else 0,
-                           current_state=g.automata.current_state if g.automata else "",
-                           memory_structures=format_mem(g.automata.memory.print_structs()) if g.automata else "",
-                           output=g.automata.output if g.automata else "",
-                           step_count=g.automata.step_count if g.automata else 0,
+                           index=last_state.get("index", 0),
+                           current_state=last_state.get("current_state", ""),
+                           memory_structures=format_mem(last_state.get("memory_structures", "")),
+                           output=last_state.get("output", ""),
+                           step_count=last_state.get("step_count", 0),
                            finished=session['finished'],
-                           accepted=g.automata.accepted if g.automata else False,
-                           message=g.automata.message if g.automata else "",
-                           streaming=session['streaming'])
+                           accepted=last_state.get("accepted", False),
+                           message=last_state.get("message", ""))
 
 @views.route('/multiple-run', methods=['GET', 'POST'])
 def multiple_run():

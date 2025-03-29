@@ -6,7 +6,7 @@ class MemoryClass:
         self.queue = {}
         self.tape = {}
 
-    def initialize(self, struct_name, struct_type, is_input_tape=False):
+    def add(self, struct_name, struct_type, is_input_tape=False):
         if struct_type == "STACK":
             if struct_name not in self.stack:
                 self.stack[struct_name] = Stack(struct_name)
