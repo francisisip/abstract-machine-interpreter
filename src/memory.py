@@ -38,6 +38,8 @@ class MemoryClass:
             return self.stack[name].peek()
         elif name in self.queue:
             return self.queue[name].peek()
+        elif name in self.tape:
+            return self.tape[name].peek()
         
     def is_empty(self, name):
         if name in self.stack:
@@ -47,8 +49,16 @@ class MemoryClass:
         elif name in self.tape:
             return self.tape[name].is_empty()
         
-    def exists(self, name):
+    def contains(self, name):
         return name in self.stack or name in self.queue or name in self.tape
+    
+    def get_type(self, name):
+        if name in self.stack:
+            return "STACK"
+        elif name in self.queue:
+            return "QUEUE"
+        elif name in self.tape:
+            return "TAPE"
     
     def print_structs(self):
         val = ""

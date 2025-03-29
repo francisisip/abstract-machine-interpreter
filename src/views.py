@@ -1,6 +1,5 @@
-import uuid
-import time
-from src.helpers import*
+import uuid, time
+from src.utils import*
 from src.automata import Automata
 from src.memory import MemoryClass
 from flask import Blueprint, render_template, request, flash, session, Response, stream_with_context, json
@@ -60,10 +59,9 @@ def stream():
 
 @views.route('/', methods=['GET', 'POST'])
 def home():
+    # initialize session variables and set default values
     if 'session_id' not in session:
         session['session_id'] = str(uuid.uuid4()) 
-
-    # initialize session variables and set default values
     if 'md' not in session:
         session['md'] = ""
     if 'input_string' not in session:
@@ -81,7 +79,6 @@ def home():
     last_state = {}
 
     if request.method == 'POST':
-
         if 'start' in request.form:
             build_machine()
 

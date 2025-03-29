@@ -65,7 +65,7 @@ class Automata():
     
     def read(self, mem_name):
         # case for memory structure not existing
-        if not self.memory.exists(mem_name):
+        if not self.memory.contains(mem_name):
             self.finished = True
             self.message = f"memory {mem_name} is not defined"
             return
@@ -98,7 +98,7 @@ class Automata():
         
     def write(self, mem_name):
         # case for memory structure not existing
-        if not self.memory.exists(mem_name):
+        if not self.memory.contains(mem_name):
             self.finished = True
             self.message = f"memory {mem_name} is not defined"
             return
@@ -123,12 +123,24 @@ class Automata():
 
     def move(self, mem_name, step):
         # case for memory structure not existing
-        if not self.memory.exists(mem_name):
+        if not self.memory.contains(mem_name):
             self.finished = True
             self.message = f"memory {mem_name} is not defined"
             return
         
-         # obtain read symbol
+        # case for invalid memory type
+        if self.memory.get_type(mem_name) not in ["TAPE", "2D_TAPE"]:
+            self.finished = True
+            self.message = f"invalid memory command"
+            return
+        
+        # case for invalid command
+        if self.memory.get_type(mem_name) == "TAPE" and step not in [-1, 1]:
+            self.finished = True
+            self.message = f"invalid movement command"
+            return
+        
+        # obtain read symbol
         symbol = self.memory.read(mem_name, step)
         
         # extract matched transitions

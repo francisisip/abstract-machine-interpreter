@@ -4,8 +4,7 @@ def split_sections(md):
     data_section = None
     logic_section = None
 
-    parts = md.split('.LOGIC', 1) # split md using .LOGIC as delimiter
-
+    parts = md.split('.LOGIC', 1)
     if len(parts) == 2:
         logic_section = '.LOGIC\n' + parts[1].strip()
 
@@ -95,15 +94,6 @@ def validateLogicSection(ls, memory):
         elif command in tape_commands:
             mem_symbol = parts[1][index + 1 : index_end].strip() if index != -1 and index_end != -1 else None
             remainder = parts[1][index_end + 1 :].strip() if index_end != -1 else ""
-
-            if mem_symbol not in memory:
-                return logic, False, f"Memory structure '{mem_symbol}' used in '{command}' is not defined in .DATA"
-
-            if memory[mem_symbol] not in ["TAPE", "2D_TAPE"]:
-                return logic, False, f"Memory '{mem_symbol}' cannot be used with movement command '{command}'"
-
-            if memory[mem_symbol] == "TAPE" and command in {"UP", "DOWN"}:
-                return logic, False, f"Memory '{mem_symbol}' cannot be used with movement command '{command}'"
 
             transitions = []
             value = ""
