@@ -131,7 +131,7 @@ class Automata():
         # case for invalid memory type
         if self.memory.get_type(mem_name) not in ["TAPE", "2D_TAPE"]:
             self.finished = True
-            self.message = f"invalid memory command"
+            self.message = f"invalid command for memory type"
             return
         
         # case for invalid command
@@ -144,18 +144,16 @@ class Automata():
         symbol = self.memory.read(mem_name, step)
         
         # extract matched transitions
-        matched_transitions = [(item[1], item(2)) for item in self.transitions[self.current_state]["transitions"] if item[0] == symbol]
-        print(matched_transitions)
+        matched_transitions = [(item[1], item[2]) for item in self.transitions[self.current_state]["transitions"] if item[0] == symbol]
 
         if not matched_transitions:
             self.finished = True
-            self.message = "no matched symbol for state " + self.current_state
+            self.message = "no transition for symbol " + symbol
             return
         
         # obtain symbol and next state, validate next state
         replacement_symbol, next_state = random.choice(matched_transitions)
         self.is_valid_state(next_state)
-        print(replacement_symbol, next_state)
 
         # updates current state, memory, and step count
         if not self.finished:
@@ -173,6 +171,13 @@ class Automata():
         if state not in self.transitions and state not in ["accept", "reject"]:
             self.finished = True
             self.message = f"state \'{state}\' is not defined"
+
+    def transfer_input(self):
+        # transfer input content to input tape
+        input_tape = next(iter(self.memory.tape.values()), None)
+        if input_tape is not None:
+            for char in self.input:
+                input_tape.add(char)
 
     def step(self):
         command = self.transitions[self.current_state]["command"]
@@ -207,10 +212,12 @@ class Automata():
             "step_count": self.step_count,
             "finished": self.finished,
             "message": self.message,
-            "accepted": self.accepted,
+            "accepted": self.accepted
         })
 
     def run(self):
+        self.transfer_input()
+
         while not self.finished:
             self.record_step()
             self.step()

@@ -14,7 +14,7 @@ class MemoryClass:
             if struct_name not in self.queue:
                 self.queue[struct_name] = Queue(struct_name)
         elif struct_type == "TAPE":
-            if struct_name not in self.queue:
+            if struct_name not in self.tape:
                 self.tape[struct_name] = Tape(struct_name, is_input_tape)
 
     def write(self, name, value):

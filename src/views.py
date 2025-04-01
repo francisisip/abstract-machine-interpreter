@@ -111,7 +111,7 @@ def home():
                            input_string=session['input_string'],
                            index=last_state.get("index", 0),
                            current_state=last_state.get("current_state", ""),
-                           memory_structures=format_memory(last_state.get("memory_structures", "")),
+                           memory_structures=last_state.get("memory_structures", ""),
                            output=last_state.get("output", ""),
                            step_count=last_state.get("step_count", 0),
                            finished=session['finished'],

@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
             var textarea = event.target;
             if (!textarea.value) {
                 event.preventDefault();
-                textarea.value = "1110110101";
+                textarea.value = "000111";
             }
         }
     });

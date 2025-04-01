@@ -19,10 +19,14 @@
 <div class="alert alert-warning text-center d-flex align-items-center justify-content-center" role="alert" style="font-size: 1.15rem;">
   {% if initialized %}
     {% if not streaming %}
-      {{ memory_structures | safe if memory_structures else "<b>[ ∅ ]</b>" | safe }}
+      {% if memory_structures %}
+        <span>{{ memory_structures | safe }}</span>
+      {% else %}
+        <b>[ ∅ ]</b>
+      {% endif %}
     {% else %}
-      <span id="memory_structures"></span>
-    {% endif %}
+      <span id="memory_structures""></span>
+    {% endif %} 
   {% else %}
   [——— <b>memory</b> ———]
   {% endif %}
@@ -68,7 +72,7 @@ D] RIGHT(T1) (Y/Y,D), (#/#,accept), (1/1,reject)
           class="form-control" 
           rows="1" 
           style="resize: none;"
-          placeholder="1110110101 # press tab to use placeholder as input"
+          placeholder="000111 # press tab to use placeholder as input"
           {% if initialized %}disabled{% endif %}
           >{{ input_string }}</textarea>
       </div>
@@ -146,7 +150,7 @@ D] RIGHT(T1) (Y/Y,D), (#/#,accept), (1/1,reject)
 
 <br>
 <p style="text-align: justify; font-size: 0.90rem;">
-  Current Procedure: <b>{{ type }}</b>. A text field for the machine definition, which includes the .DATA and .LOGIC sections,
+  Current Procedure: <b>{{ procedure }}</b>. A text field for the machine definition, which includes the .DATA and .LOGIC sections,
   and a text field for the input string is provided. An example of the machine definition and input string is shown above. 
   More information about which memory storage and operations are supported can be found <a href="">here</a>.
 </p>

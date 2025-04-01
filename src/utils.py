@@ -39,7 +39,7 @@ def validateDataSection(ds):
 
     return memory, True, "Valid .DATA section"
 
-def validateLogicSection(ls, memory):
+def validateLogicSection(ls):
     logic = {}
     normal_commands = {"SCAN", "PRINT", "SCAN RIGHT", "SCAN LEFT", "READ", "WRITE"}
     tape_commands = {"RIGHT", "LEFT", "UP", "DOWN"}
@@ -135,14 +135,17 @@ def extractMachineDefinition(md):
         return memory_dict, logic_dict, False, error
 
     # validate logic section and store in dictionary
-    logic_dict, valid, error = validateLogicSection(logic_section, memory_dict)
+    logic_dict, valid, error = validateLogicSection(logic_section)
     if not valid:
         return memory_dict, logic_dict, False, error
 
     return memory_dict, logic_dict, True, "Valid machine definition"
 
 def format_memory(memory_structures):
-    memory_structures = re.sub(r'(\bS\d+:|\bQ\d+:|\bT\d+:)', r'<b>\1</b>', memory_structures)
+    memory_structures = re.sub(r'(\b\w+)(:)', r'<b>\1</b>\2', memory_structures)
     memory_structures = memory_structures.replace("\n", "<br>")
+    memory_structures = re.sub(r'style="([^"]*?)<b>(.*?)</b>([^"]*?)"', r'style="\1\2\3"', memory_structures)
+    memory_structures = re.sub(r'(<span[^>]*?style="[^"]*?)<b>(.*?)</b>([^"]*?">)', r'\1\2\3', memory_structures)
 
     return memory_structures
+
