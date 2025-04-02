@@ -15,15 +15,32 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    document.getElementById("input-string").addEventListener("keydown", function(event) {
-        if (event.key === "Tab") {
-            var textarea = event.target;
-            if (!textarea.value) {
-                event.preventDefault();
-                textarea.value = "000111";
+    var inputIndex = document.getElementById("input-string");
+    var inputMulti = document.getElementById("input-strings");
+
+    if (inputIndex) {
+        inputIndex.addEventListener("keydown", function(event) {
+            if (event.key === "Tab") {
+                var textarea = event.target;
+                if (!textarea.value) {
+                    event.preventDefault();
+                    textarea.value = "000111";
+                }
             }
-        }
-    });
+        });
+    }
+
+    if (inputMulti) {
+        inputMulti.addEventListener("keydown", function(event) {
+            if (event.key === "Tab") {
+                var textarea = event.target;
+                if (!textarea.value) {
+                    event.preventDefault();
+                    textarea.value = "01\n000111\n0000000011111111";
+                }
+            }
+        });
+    }
 
     // Textfield line numbers handling
     function updateLineNumbers() {

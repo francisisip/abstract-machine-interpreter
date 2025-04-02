@@ -39,26 +39,66 @@ def build_machine():
             if "memory_structures" in step:
                 step["memory_structures"] = format_memory(step["memory_structures"])
 
+def build_machines():
+    # store form data in session variables
+    session['md'] = request.form.get('machine-definition')
+    session['inputs'] = request.form.get('input-strings')
+
+    input_strings = session['inputs'].splitlines()
+
+    # extract machine definition if valid machine syntax
+    memory_dict, logic_dict, valid, error = extractMachineDefinition(session['md'])
+
+    last_states = []
+
+    if not valid:
+        flash(error, category='error')
+        automata = None
+    else:
+        session['initialized'] = True
+
+        for input_string in input_strings:
+            memory = setup_memory(memory_dict)
+            automata = Automata(memory, logic_dict, input_string)
+            steps = automata.run()
+
+            for step in steps:
+                if "memory_structures" in step:
+                    step["memory_structures"] = format_memory(step["memory_structures"])
+
+            # get final step
+            last_states.append(steps[-1])
+    
+    session['finished'] = True
+    return input_strings, last_states
+
 views = Blueprint('views', __name__)
 @views.route('/stream')
 def stream():
     def event_stream():
-        if session['streaming']:
-            while session['current_step'] < len(session['steps']) - 1:
-                time.sleep(0.1)
-                session['current_step'] += 1
-                session['finished'] = session['current_step'] == len(session['steps']) - 1
+        if session['last_route'] == '/':
+            if session['streaming']:
+                while session['current_step'] < len(session['steps']) - 1:
+                    time.sleep(0.1)
+                    session['current_step'] += 1
+                    session['finished'] = session['current_step'] == len(session['steps']) - 1
+                    
+                    step_data = session['steps'][session['current_step']]           
+                    yield f"data: {json.dumps(step_data)}\n\n"
                 
-                step_data = session['steps'][session['current_step']]           
-                yield f"data: {json.dumps(step_data)}\n\n"
-            
-            session['streaming'] = False
-            session['finished'] = True
+                session['streaming'] = False
+                session['finished'] = True
 
     return Response(stream_with_context(event_stream()), content_type='text/event-stream')
 
 @views.route('/', methods=['GET', 'POST'])
 def home():
+
+    if session.get('last_route') == '/multiple-run':
+        session.clear()
+
+    session['last_route'] = '/'
+
     # initialize session variables and set default values
     if 'session_id' not in session:
         session['session_id'] = str(uuid.uuid4()) 
@@ -121,4 +161,46 @@ def home():
 
 @views.route('/multiple-run', methods=['GET', 'POST'])
 def multiple_run():
-    return render_template("multiple_inputs.html", type="Multiple Run")
+    if session.get('last_route') == '/':
+        session.clear()
+    
+    session['last_route'] = '/multiple-run'
+
+    if 'session_id' not in session:
+        session['session_id'] = str(uuid.uuid4())
+    if 'md' not in session:
+        session['md'] = ""
+    if 'inputs' not in session:
+        session['inputs'] = ""
+    if 'initialized' not in session:
+        session['initialized'] = False
+    if 'finished' not in session:
+        session['finished'] = False
+    outputs = {}
+
+    if request.method == 'POST':
+        if 'start' in request.form:
+            input_strings, last_states = build_machines()
+
+            outputs = {
+                input_strings[i]: {
+                    "memory_structure": state["memory_structures"],
+                    "output": state["output"],
+                    "status": "halt-accept" if state["accepted"] else "halt-reject",
+                }
+                for i, state in enumerate(last_states)
+            }
+            
+            print(outputs)
+
+        if 'reset' in request.form:
+            session['initialized'] = False
+            session['finished'] = False
+
+    return render_template("multiple_inputs.html", 
+                           procedure="Multiple Run", 
+                           initialized=session['initialized'],
+                           md=session['md'], 
+                           input_string=session['inputs'], 
+                           finished=session['finished'],
+                           outputs=outputs)

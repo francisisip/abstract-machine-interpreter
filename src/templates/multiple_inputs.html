@@ -1,38 +1,106 @@
 {% extends "base.html" %}
 
 {% block content %}
+
+{% if not finished %}
+<form method="post">
+  <div class="form-group editor-container">
+    <label for="machine-definition" style="font-weight: bold;">Machine Definition</label>
+    <div class="editor-wrapper">
+        <div id="line-numbers" class="line-numbers"></div>
+        <textarea 
+            id="machine-definition" 
+            name="machine-definition" 
+            class="form-control text-area"
+            rows="10"
+            placeholder=
+".DATA
+TAPE T1
+
+.LOGIC
+A] RIGHT(T1) (0/X,B), (Y/Y,D), (1/1,reject)
+B] RIGHT(T1) (0/0,B), (Y/Y,B), (1/Y,C)
+C] LEFT(T1) (0/0,C), (Y/Y,C), (X/X,A)
+D] RIGHT(T1) (Y/Y,D), (#/#,accept), (1/1,reject)
+
+# press tab to use placeholder as input"
+            data-md="{{ md|replace('\n', '&#10;') }}"
+            oninput="updateLineNumbers()" 
+            onscroll="syncScroll()"
+            {% if initialized %}disabled{% endif %}
+        >{{ md }}</textarea>
+    </div>
+</div>
+
+  <div class="form-group editor-container">
+    <label for="input-strings" style="font-weight: bold;">Input String</label>
+    <textarea 
+      id="input-strings" 
+      name="input-strings" 
+      class="form-control" 
+      rows="3" 
+      style="resize: none;"
+      placeholder=
+"01
+000111
+0000000011111111 # press tab to use placeholder as input"
+      {% if initialized %}disabled{% endif %}
+      >{{ input_string }}</textarea>
+  </div>
+
+
+{% else %}
+
+{% if outputs %}
+  <div class="mt-5">
+    <h4 class="text-center">Machine Execution Results</h4>
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered">
+        <thead class="table-dark">
+          <tr>
+            <th>Input String</th>
+            <th>Memory Structures</th>
+            <th>Output</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for input_str, data in outputs.items() %}
+          <tr>
+            <td><code>{{ input_str }}</code></td>
+            <td>{{ data.memory_structure | safe }}</td>
+            <td>{{ data.output }}</td>
+            <td>
+              {% if data.status == "halt-accept" %}
+                <span class="badge bg-success">Accepted</span>
+              {% else %}
+                <span class="badge bg-danger">Rejected</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+{% endif %}
+
+<div class="button-container">
+  <form method="post">
+    <input type="submit" class="btn btn-danger" id="startBtn" name="start" value="Run" {% if finished %}disabled{% endif %}>
+    <input type="submit" class="btn btn-secondary" name="reset" value="Reset" style="margin-left: 10px;">
+  </form>
+</div>
+
+
 <br>
-<h1 style="text-align: center;">Abstract Machine Interpreter</h1>
-<p style="text-align: center;">Developed by: Francis Isip Bawa (CSC615M G01) </p>
-
-<p style="text-align: justify;">
-  This is a web-based interpreter for a variety of abstract computational models, 
-  each involving different methods of memory storage, memory access, and input-output access.
-  A text field is provided to input the machine definition, which includes the .DATA and .LOGIC sections, as well as a text field for the input string. An example of a machine definition is shown below:
+<p style="text-align: justify; font-size: 0.90rem;">
+  Current Procedure: <b>{{ procedure }}</b>. A text field for the machine definition, which includes the .DATA and .LOGIC sections,
+  and a text field for the input string is provided. An example of the machine definition and input string is shown above. 
+  More information about which memory storage and operations are supported can be found <a href="">here</a>.
 </p>
+<p style="text-align: center; font-size: 0.75rem; font-style: italic;">Developed by: Francis I. Bawa | CSC615M G01</p>
 
-<pre>
-  .DATA
-  TAPE T1
-
-  .LOGIC
-  A] RIGHT(T1) (0/X,B), (Y/Y,D), (1/1,reject)
-  B] RIGHT(T1) (0/0,B), (Y/Y,B), (1/Y,C)
-  C] LEFT(T1) (0/0,C), (Y/Y,C), (X/X,A)
-  D] RIGHT(T1) (Y/Y,D), (#/#,accept), (1/1,reject)
-
-  More information about which memory storage and operations are supported can be at the bottom.
-</pre>
-
-<p>
-  The following procedures are supported:
-  <ul>
-    <li>Step by State: This procedure allows you to step through the execution of a program one state at a time.</li>
-    <li>Multiple Run: This procedure allows you to run a program multiple times and view the final state of the program.</li>
-  </ul>
-
-  To get started, click on the procedure you would like to use from the navigation bar above. <br>
-  Currently, you are using the <b>{{procedure}}</b> procedure.
-</p>
-  
 {% endblock %}
