@@ -20,9 +20,6 @@ class Tape:
         self._ensure_index_exists(self.head)
         return self.tape[self.head]
     
-    def is_empty(self):
-        return len(self.tape) == 0
-    
     def print(self):
         tape_content = "".join(
             [f'<span style="color:red; font-weight:bold">{char}</span>' if idx == self.head else char
@@ -31,4 +28,4 @@ class Tape:
         return f"{self.name}: {tape_content}"
     
     def add(self, value):
-        self.tape.append(value)
+        self.tape = list(value)

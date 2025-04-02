@@ -121,7 +121,7 @@ class Automata():
             self.current_state = next_state
             self.step_count += 1
 
-    def move(self, mem_name, step):
+    def right(self, mem_name, step):
         # case for memory structure not existing
         if not self.memory.contains(mem_name):
             self.finished = True
@@ -134,15 +134,43 @@ class Automata():
             self.message = f"invalid command for memory type"
             return
         
-        # case for invalid command
-        if self.memory.get_type(mem_name) == "TAPE" and step not in [-1, 1]:
-            self.finished = True
-            self.message = f"invalid movement command"
-            return
-        
         # obtain read symbol
         symbol = self.memory.read(mem_name, step)
         
+        # extract matched transitions
+        matched_transitions = [(item[1], item[2]) for item in self.transitions[self.current_state]["transitions"] if item[0] == symbol]
+
+        if not matched_transitions:
+            self.finished = True
+            self.message = "no transition for symbol " + symbol
+            return
+        
+        # obtain symbol and next state, validate next state
+        replacement_symbol, next_state = random.choice(matched_transitions)
+        self.is_valid_state(next_state)
+
+        # updates current state, memory, and step count
+        if not self.finished:
+            self.memory.write(mem_name, replacement_symbol)
+            self.current_state = next_state
+            self.step_count += 1
+
+    def up(self, mem_name, step):
+        # case for memory structure not existing
+        if not self.memory.contains(mem_name):
+            self.finished = True
+            self.message = f"memory {mem_name} is not defined"
+            return
+
+        # case for invalid memory type
+        if self.memory.get_type(mem_name) != "2D_TAPE":
+            self.finished = True
+            self.message = f"invalid command for memory type"
+            return
+
+        # obtain read symbol
+        symbol = self.memory.read(mem_name, 0, step)
+
         # extract matched transitions
         matched_transitions = [(item[1], item[2]) for item in self.transitions[self.current_state]["transitions"] if item[0] == symbol]
 
@@ -174,10 +202,9 @@ class Automata():
 
     def transfer_input(self):
         # transfer input content to input tape
-        input_tape = next(iter(self.memory.tape.values()), None)
+        input_tape = next((tape for tape in [*self.memory.tape.values(), *self.memory.tape_2d.values()] if tape.is_input), None)
         if input_tape is not None:
-            for char in self.input:
-                input_tape.add(char)
+            input_tape.add(self.input)
 
     def step(self):
         command = self.transitions[self.current_state]["command"]
@@ -196,9 +223,13 @@ class Automata():
         elif command == "WRITE":
             self.write(mem_name)
         elif command == "LEFT":
-            self.move(mem_name, -1)
+            self.right(mem_name, -1)
         elif command == "RIGHT":
-            self.move(mem_name, 1)
+            self.right(mem_name, 1)
+        elif command == "UP":
+            self.up(mem_name, -1)
+        elif command == "DOWN":
+            self.up(mem_name, 1)
 
         self.is_finished()
 
