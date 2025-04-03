@@ -1,4 +1,5 @@
 import random
+import time
 
 class Automata():
     def __init__(self, memory, logic_dict, input_string):
@@ -249,7 +250,13 @@ class Automata():
     def run(self):
         self.transfer_input()
 
+        start_time = time.time()  # Record the start time
+
         while not self.finished:
+            if time.time() - start_time > 2:  # Stop if more than 2 seconds elapsed
+                print("Execution stopped: Exceeded time limit.")
+                break
+
             self.record_step()
             self.step()
         
