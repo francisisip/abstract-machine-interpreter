@@ -29,13 +29,11 @@ class Tape_2D:
 
     def write(self, value):
         row, col = self.head
-        print(f"Writing {value} at {row}, {col}")
         self.tape[row][col] = value
 
     def read(self, step, vert=0):
         self.head = (self.head[0] + vert, self.head[1] + step)
         row, col = self.head
-        print(f"Reading at {row}, {col}")
         self._ensure_index_exists(self.head)
         return self.tape[self.head[0]][self.head[1]]
     

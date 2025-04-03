@@ -191,7 +191,6 @@ def multiple_run():
                 for i, state in enumerate(last_states)
             }
             
-            print(outputs)
 
         if 'reset' in request.form:
             session['initialized'] = False
